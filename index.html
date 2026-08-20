@@ -88,12 +88,17 @@
   .cb.lock{opacity:.7;cursor:default}
   .ex-txt{flex:1 1 auto;min-width:0}
   .ex-head{display:flex;align-items:center;gap:8px;cursor:pointer}
-  .ex-name{font-size:15px;font-weight:600}
+  .ex-name{font-size:15px;font-weight:600;flex:1 1 auto;min-width:0}
   .ex-name .rep{font-family:ui-monospace,Menlo,monospace;color:var(--spruce);font-weight:700;margin-left:4px}
   .ex.done .ex-name{text-decoration:line-through;text-decoration-color:var(--stone);color:var(--stone)}
-  .i{flex:0 0 auto;width:19px;height:19px;border-radius:50%;border:1.5px solid var(--stone);color:var(--stone);background:none;font-size:11px;font-style:italic;font-weight:700;font-family:Georgia,serif;cursor:pointer;display:grid;place-items:center;padding:0;margin-left:auto}
+  .cell .dot svg{display:block}
+  .timerbtn{flex:0 0 auto;font-family:ui-monospace,Menlo,monospace;font-size:12px;font-weight:700;color:var(--spruce);background:var(--spruce-soft);border:none;border-radius:20px;padding:3px 10px;cursor:pointer;min-width:52px;text-align:center}
+  .timerbtn.run{background:var(--amber-soft);color:var(--amber)}
+  .timerbtn.fin{background:var(--spruce);color:#fff}
+  .i{flex:0 0 auto;width:19px;height:19px;border-radius:50%;border:1.5px solid var(--stone);color:var(--stone);background:none;font-size:11px;font-style:italic;font-weight:700;font-family:Georgia,serif;cursor:pointer;display:grid;place-items:center;padding:0;margin-left:2px}
   .i.open{background:var(--stone);color:var(--card)}
   .ex-easy{font-size:12px;color:var(--amber);margin-top:2px}
+  .starchip{font-size:10px;font-weight:700;letter-spacing:.03em;color:var(--amber);background:var(--amber-soft);border-radius:20px;padding:1px 7px;flex:0 0 auto}
   .ex-note{font-size:12.5px;color:var(--stone);margin-top:1px}
   .ex-info{font-size:12.5px;line-height:1.5;background:var(--paper);border:1px solid var(--line);border-radius:9px;padding:9px 11px;margin-top:8px}
 
@@ -160,17 +165,24 @@ const INFO={
   "Cat-cow":"Op handen en knieën. Wissel traag tussen holle rug (kijk omhoog) en bolle rug (kin naar de borst), mee op je adem. Losmaker voor de rug.",
   "Squats":"Voeten op heupbreedte. Zak alsof je op een stoel gaat zitten: heupen naar achter, knieën volgen de tenen, rug recht. Duw via je hielen weer omhoog.",
   "Split squats":"Sta in een schrede: één voet voor, één achter. Zak recht naar beneden tot de achterste knie bijna de grond raakt, duw via de voorste hiel omhoog. Reps per been. Steun eventueel met een hand.",
+  "Reverse lunges":"Stap met één been naar achter en zak tot de achterste knie bijna de grond raakt. Duw via het voorste been terug naar stand. Reps per been. Steun eventueel met een hand.",
   "Wall push-ups":"Sta op armlengte van een muur, handen op schouderhoogte. Buig je armen om je borst naar de muur te laten zakken, duw terug. De makkelijkste push-up.",
   "Incline push-ups":"Handen op een verhoging (aanrecht, tafel, trap). Hoe hoger de steun, hoe makkelijker. Zak met je borst naar de rand, duw terug, lichaam recht.",
   "Knee push-ups":"Push-up steunend op je knieën i.p.v. je tenen. Handen iets breder dan schouders, lichaam recht van knie tot hoofd, zak en duw.",
   "Push-ups":"Volledige push-up op handen en tenen. Lichaam één rechte lijn, zak tot je borst bijna de grond raakt, duw terug. Span je buik aan.",
   "Glute bridge":"Op je rug, knieën gebogen, voeten plat. Duw je heupen omhoog tot schouder–heup–knie één lijn vormen door je billen aan te spannen. Gecontroleerd zakken.",
   "Single-leg glute bridge":"Glute bridge met één been gestrekt omhoog. Duw via de hiel van het steunende been je heup omhoog, bekken recht houden. Reps per been.",
+  "Glute kickbacks":"Op handen en knieën. Duw één been naar achter-omhoog (voet naar het plafond), knie ~90°, tot je bil aanspant. Rustig terug. Reps per been.",
   "Calf raises":"Duw je hielen zo hoog mogelijk omhoog tot je op je tenen staat, even vasthouden, traag zakken. Steun licht met een hand voor je evenwicht.",
   "Single-leg calf raises":"Calf raise op één been, het andere licht van de grond. Duw je hiel hoog op, traag zakken. Steun met een hand aan de muur. Reps per been.",
+  "Wall sit":"Rug plat tegen de muur, zak tot je knieën ongeveer 90° zijn (alsof je op een onzichtbare stoel zit). Hou de tijd vast. Minder diep zakken = makkelijker.",
   "Bird dog":"Op handen en knieën. Strek tegelijk je ene arm naar voor en het tegenovergestelde been naar achter, in lijn met je rug. Even vasthouden, dan de andere kant.",
   "Dead bug":"Op je rug, armen recht omhoog, knieën in 90°. Laat traag je ene arm én het tegenovergestelde been zakken tot net boven de grond, terug, dan de andere kant. Onderrug tegen de vloer.",
   "Plank":"Steun op onderarmen en tenen, lichaam één rechte lijn van hoofd tot hielen. Span buik en billen aan, hol niet door. Op je knieën = makkelijker.",
+  "Side plank":"Lig op je zij, steun op één onderarm, lichaam recht, heup omhoog. Hou de tijd vast, dan de andere kant. Op je onderste knie steunen = makkelijker.",
+  "Superman":"Op je buik, armen naar voor gestrekt. Til tegelijk je armen, borst en benen een stukje van de grond, alsof je vliegt. Even vasthouden, rustig zakken. Traint de rugspieren.",
+  "Hip flexor stretch":"Kniel op één knie, andere voet plat voor je. Knijp de bil van het achterste been aan en duw je heup zacht naar voor, romp rechtop. Rek vooraan de heup. Dan wisselen.",
+  "Hamstring stretch":"Eén been gestrekt voor je, buig vanuit de heup naar voor met rechte rug tot je rek voelt achteraan het bovenbeen. Dan wisselen. Niet doorveren.",
   "Child's pose":"Kniel, zak met je zit naar je hielen en strek je armen naar voor op de grond. Laat rug en schouders ontspannen. Rustig ademen."
 };
 
@@ -178,17 +190,39 @@ const MAX=6;
 const EX={
   catcow:[{n:"Cat-cow",r:"6×"},{n:"Cat-cow",r:"8×"},{n:"Cat-cow",r:"8×"},{n:"Cat-cow",r:"8×"},{n:"Cat-cow",r:"8×"},{n:"Cat-cow",r:"8×"}],
   squat:[{n:"Squats",r:"8×",easy:"tot op een stoel zakken"},{n:"Squats",r:"10×"},{n:"Squats",r:"10×",note:"traag: 3 tellen zakken"},{n:"Squats",r:"12×",note:"traag: 3 tellen zakken"},{n:"Split squats",r:"8× p/been",easy:"steun met een hand"},{n:"Split squats",r:"10× p/been"}],
+  lunge:[{n:"Reverse lunges",r:"6× p/been",easy:"steun met een hand"},{n:"Reverse lunges",r:"8× p/been"},{n:"Reverse lunges",r:"10× p/been"},{n:"Reverse lunges",r:"10× p/been",note:"traag"},{n:"Reverse lunges",r:"12× p/been"},{n:"Reverse lunges",r:"12× p/been",note:"traag"}],
   glute:[{n:"Glute bridge",r:"10×"},{n:"Glute bridge",r:"12×"},{n:"Glute bridge",r:"14×"},{n:"Single-leg glute bridge",r:"8× p/been"},{n:"Single-leg glute bridge",r:"10× p/been"},{n:"Single-leg glute bridge",r:"12× p/been"}],
+  kickback:[{n:"Glute kickbacks",r:"10× p/been"},{n:"Glute kickbacks",r:"12× p/been"},{n:"Glute kickbacks",r:"12× p/been",note:"even vasthouden boven"},{n:"Glute kickbacks",r:"14× p/been",note:"even vasthouden boven"},{n:"Glute kickbacks",r:"15× p/been"},{n:"Glute kickbacks",r:"15× p/been"}],
   calf:[{n:"Calf raises",r:"12×"},{n:"Calf raises",r:"15×"},{n:"Calf raises",r:"15×",note:"traag, 2 tellen boven"},{n:"Single-leg calf raises",r:"12× p/been"},{n:"Single-leg calf raises",r:"14× p/been"},{n:"Single-leg calf raises",r:"16× p/been"}],
+  wallsit:[{n:"Wall sit",r:"20 sec",easy:"minder diep zakken"},{n:"Wall sit",r:"25 sec"},{n:"Wall sit",r:"30 sec"},{n:"Wall sit",r:"40 sec"},{n:"Wall sit",r:"45 sec"},{n:"Wall sit",r:"50 sec"}],
   push:[{n:"Wall push-ups",r:"8×"},{n:"Incline push-ups",r:"8×",easy:"hogere steun = makkelijker"},{n:"Incline push-ups",r:"10×"},{n:"Knee push-ups",r:"8×"},{n:"Knee push-ups",r:"10×"},{n:"Push-ups",r:"8×",easy:"op je knieën, 12×"}],
   plank:[{n:"Plank",r:"15 sec",easy:"op je knieën"},{n:"Plank",r:"20 sec",easy:"op je knieën"},{n:"Plank",r:"30 sec"},{n:"Plank",r:"40 sec"},{n:"Plank",r:"45 sec"},{n:"Plank",r:"50 sec"}],
+  sideplank:[{n:"Side plank",r:"10 sec p/kant",easy:"op je onderste knie"},{n:"Side plank",r:"15 sec p/kant",easy:"op je onderste knie"},{n:"Side plank",r:"20 sec p/kant"},{n:"Side plank",r:"25 sec p/kant"},{n:"Side plank",r:"30 sec p/kant"},{n:"Side plank",r:"35 sec p/kant"}],
   deadbug:[{n:"Dead bug",r:"6× p/kant"},{n:"Dead bug",r:"8× p/kant"},{n:"Dead bug",r:"10× p/kant"},{n:"Dead bug",r:"10× p/kant",note:"traag"},{n:"Dead bug",r:"12× p/kant",note:"traag"},{n:"Dead bug",r:"12× p/kant",note:"traag"}],
   birddog:[{n:"Bird dog",r:"6× p/kant"},{n:"Bird dog",r:"8× p/kant"},{n:"Bird dog",r:"10× p/kant"},{n:"Bird dog",r:"10× p/kant",note:"even vasthouden"},{n:"Bird dog",r:"12× p/kant",note:"2 tellen vasthouden"},{n:"Bird dog",r:"12× p/kant",note:"2 tellen vasthouden"}],
+  superman:[{n:"Superman",r:"8×"},{n:"Superman",r:"10×"},{n:"Superman",r:"10×",note:"2 tellen vasthouden"},{n:"Superman",r:"12×",note:"2 tellen vasthouden"},{n:"Superman",r:"12×",note:"3 tellen vasthouden"},{n:"Superman",r:"12×",note:"3 tellen vasthouden"}],
+  hipflexor:[{n:"Hip flexor stretch",r:"30 sec p/kant"},{n:"Hip flexor stretch",r:"30 sec p/kant"},{n:"Hip flexor stretch",r:"30 sec p/kant"},{n:"Hip flexor stretch",r:"30 sec p/kant"},{n:"Hip flexor stretch",r:"40 sec p/kant"},{n:"Hip flexor stretch",r:"40 sec p/kant"}],
+  hamstring:[{n:"Hamstring stretch",r:"30 sec p/kant"},{n:"Hamstring stretch",r:"30 sec p/kant"},{n:"Hamstring stretch",r:"30 sec p/kant"},{n:"Hamstring stretch",r:"30 sec p/kant"},{n:"Hamstring stretch",r:"40 sec p/kant"},{n:"Hamstring stretch",r:"40 sec p/kant"}],
   childs:[{n:"Child's pose",r:"30 sec"},{n:"Child's pose",r:"30 sec"},{n:"Child's pose",r:"30 sec"},{n:"Child's pose",r:"30 sec"},{n:"Child's pose",r:"40 sec"},{n:"Child's pose",r:"40 sec"}],
 };
-const DAY_A={key:"A",name:"Onderlijf & core",seq:["catcow","squat","glute","calf","deadbug","birddog","childs"]};
-const DAY_B={key:"B",name:"Bovenlijf & core",seq:["catcow","push","plank","birddog","glute","deadbug","childs"]};
-function circuit(li,type){ const d=type==="A"?DAY_A:DAY_B; return d.seq.map(k=>EX[k][li]); }
+
+/* 4 roterende dagen — draaien door: A → B → C → D → A ...
+   De "ster" (object met pool) rouleert per dag, dus zelfs dezelfde dag varieert. */
+const DAYS=[
+  {tag:"A",name:"Onderlijf & billen",seq:["catcow",{pool:["squat","lunge","wallsit"]},"glute","calf","deadbug","birddog","childs"]},
+  {tag:"B",name:"Bovenlijf & core",seq:["catcow","push",{pool:["plank","sideplank","deadbug"]},"birddog","glute","calf","childs"]},
+  {tag:"C",name:"Core & rug",seq:["catcow","birddog","superman",{pool:["deadbug","sideplank","plank"]},"wallsit","glute","hipflexor"]},
+  {tag:"D",name:"Full mix",seq:["catcow",{pool:["squat","lunge","wallsit"]},"push","kickback","calf","plank","hamstring"]},
+];
+function resolveDay(day){ const cyc=Math.floor(total()/DAYS.length); return day.seq.map(s=> typeof s==="string" ? s : s.pool[cyc % s.pool.length]); }
+function starIndexOf(day){ return day.seq.findIndex(s=> typeof s!=="string"); }
+function circuit(li,di){ return resolveDay(DAYS[di]).map(k=>EX[k][li]); }
+const DAYICON={
+  A:'<svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4 L6 16"/><path d="M10 4 L14 16"/><path d="M6 16 H4"/><path d="M14 16 H16"/></svg>',
+  B:'<svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 10 H15"/><path d="M5 7 V13"/><path d="M15 7 V13"/><path d="M3 8.5 V11.5"/><path d="M17 8.5 V11.5"/></svg>',
+  C:'<svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3 C13 5 13 8 10 10 C7 12 7 15 10 17"/></svg>',
+  D:'<svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor" stroke="none"><circle cx="7" cy="7" r="1.8"/><circle cx="13" cy="7" r="1.8"/><circle cx="7" cy="13" r="1.8"/><circle cx="13" cy="13" r="1.8"/></svg>',
+};
 
 const ACH=[
   {id:"s1",kind:"total",n:1,em:"🌱",name:"Van start",sub:"1e sessie"},
@@ -204,8 +238,10 @@ const ACH=[
 ];
 
 const KEY="mcdofit:v1";
-let state={log:{},rest:{},best:0,offset:0,maxHit:false,today:null,dayType:"A",checks:{},dark:undefined};
+let state={log:{},rest:{},best:0,offset:0,maxHit:false,today:null,dayIdx:0,checks:{},dark:undefined};
 let infoOpen={};
+let running={};
+function clearTimers(){ for(const k in running){ clearInterval(running[k]); } running={}; }
 
 async function load(){
   let raw=null;
@@ -213,6 +249,7 @@ async function load(){
   if(raw===null){ try{ raw=localStorage.getItem(KEY); }catch(e){} }
   if(raw){ try{ Object.assign(state, JSON.parse(raw)); }catch(e){} }
   if(!state.log) state.log={}; if(!state.rest) state.rest={};
+  if(typeof state.dayIdx!=="number") state.dayIdx=0;
   if(state.dark===undefined){ try{ state.dark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches; }catch(e){ state.dark=false; } }
 }
 async function save(){
@@ -232,8 +269,7 @@ function restCountInWeek(s){ const wk=weekKey(s); return Object.keys(state.rest)
 function total(){ return Object.keys(state.log).length; }
 function autoLevel(){ return Math.min(MAX, 1+Math.floor(total()/5)); }
 function levelIdx(){ return Math.max(1, Math.min(MAX, autoLevel()+state.offset)) - 1; }
-function otherType(){ return state.dayType==="A"?"B":"A"; }
-function typeName(t){ return t==="A"?DAY_A.name:DAY_B.name; }
+function nextIdx(){ return (state.dayIdx+1)%DAYS.length; }
 
 function computeStreak(){
   let cur=todayStr(), count=0, used={}, first=true, guard=0;
@@ -258,7 +294,7 @@ function unlockedIds(){
 
 function freshen(){
   const t=todayStr();
-  if(state.today!==t){ state.today=t; state.checks={}; state.dayType=(total()%2===0)?"A":"B"; }
+  if(state.today!==t){ state.today=t; state.checks={}; state.dayIdx=total()%DAYS.length; }
   state.best=Math.max(state.best||0, computeStreak());
 }
 
@@ -267,7 +303,7 @@ function complete(){
   if(state.log[t]) return;
   const before=unlockedIds();
   if(state.rest[t]) delete state.rest[t];
-  state.log[t]=state.dayType;
+  state.log[t]=DAYS[state.dayIdx].tag;
   state.best=Math.max(state.best, computeStreak());
   if(levelIdx()+1>=MAX) state.maxHit=true;
   const gained=unlockedIds().filter(id=>!before.includes(id));
@@ -291,30 +327,30 @@ function applyTheme(){
 
 function render(gained){
   gained=gained||[];
-  const li=levelIdx(), items=circuit(li,state.dayType), t=todayStr(), doneToday=!!state.log[t], streak=computeStreak();
+  clearTimers();
+  const li=levelIdx(), di=state.dayIdx, day=DAYS[di], items=circuit(li,di), starIdx=starIndexOf(day), t=todayStr(), doneToday=!!state.log[t], streak=computeStreak();
 
   document.getElementById("v-streak").textContent=streak;
   document.getElementById("t-streak").classList.toggle("cold", streak===0);
   document.getElementById("v-level").innerHTML=(li+1)+"<small>/6</small>";
   document.getElementById("v-total").textContent=total();
 
-  // week strip
   const mon=mondayOf(t), labels=["ma","di","wo","do","vr","za","zo"];
   let doneThisWeek=0, cells="";
   for(let i=0;i<7;i++){
     const d=addDays(mon,i), isToday=(d===t), isFuture=(d>t), done=!!state.log[d], rest=!!state.rest[d];
     if(done) doneThisWeek++;
     let cls="cell", inner="";
-    if(done){ cls+=" done"; inner=state.log[d]; }
+    if(done){ cls+=" done"; inner=DAYICON[state.log[d]]||state.log[d]; }
     else if(rest){ cls+=" rest"; inner="●"; }
     else if(isFuture){ cls+=" future"; }
     else { cls+=" miss"; }
     if(isToday) cls+=" today";
-    const tappable = !done && !isFuture; // vandaag of gemiste dag
+    const tappable=!done && !isFuture;
     if(tappable) cls+=" tap";
     cells+='<div class="'+cls+'"><span class="cl">'+labels[i]+'</span><div class="dot"'+(tappable?' data-rest="'+d+'"':'')+'>'+inner+'</div></div>';
   }
-  const jokerLeft = restCountInWeek(t)<1;
+  const jokerLeft=restCountInWeek(t)<1;
   document.getElementById("week").innerHTML=
     '<div class="wt"><b>Deze week</b><span>'+doneThisWeek+'/7</span></div>'+
     '<div class="cells">'+cells+'</div>'+
@@ -325,16 +361,14 @@ function render(gained){
         ? 'Tik een gemiste dag (of vandaag) aan om je <b>joker</b> in te zetten — die beschermt je reeks. Eén per week.'
         : 'Joker van deze week is ingezet. Tik hem opnieuw aan om te annuleren.')+'</div>';
 
-  // progress
   const al=autoLevel(), into=total()%5, toNext=5-into;
   const hint='<div class="hint">Opbouw via moeilijkere varianten en tempo — niet enkel meer herhalingen. Op niveau 6 blijft het gelijk.</div>';
   document.getElementById("prog").innerHTML = (al>=MAX
     ? '<div class="row"><b>Niveau 6 — onderhoudsmodus</b><span>plafond</span></div><div class="track"><div class="fill" style="width:100%"></div></div>'+hint
     : '<div class="row"><b>Nog '+toNext+' sessie'+(toNext===1?'':'s')+' tot niveau '+(al+1)+'</b><span>'+into+'/5</span></div><div class="track"><div class="fill" style="width:'+(into/5*100)+'%"></div></div>'+hint);
 
-  // tonight
   const tn=document.getElementById("tonight");
-  let head='<div class="th"><div class="lab">Vanavond · niveau '+(li+1)+' <span class="daytag">'+state.dayType+'-dag</span></div><div class="lvl">'+typeName(state.dayType)+'</div><div class="nx">Wisselt af — morgen: '+typeName(otherType())+'</div></div>';
+  let head='<div class="th"><div class="lab">Vanavond · niveau '+(li+1)+'</div><div class="lvl">'+day.name+'</div><div class="nx">Morgen: '+DAYS[nextIdx()].name+'</div></div>';
   let banner="";
   if(!doneToday && state.rest[t]) banner='<div class="restbanner">Rustdag ingezet — je reeks blijft beschermd. Toch zin? Vink gewoon af, dan telt het als sessie.</div>';
   let cele="";
@@ -344,10 +378,12 @@ function render(gained){
   }
   const rows=items.map((ex,j)=>{
     const on=!!state.checks[j], hasInfo=!!INFO[ex.n], iOpen=!!infoOpen[j], lock=doneToday;
+    const tm=(!lock)?ex.r.match(/(\d+)\s*sec/):null; const tsec=tm?+tm[1]:0;
     return '<div class="ex'+(on?" done":"")+'">'+
       '<div class="cb'+(on?" on":"")+(lock?" lock":"")+'"'+(lock?'':' data-j="'+j+'" role="checkbox" tabindex="0"')+'><svg viewBox="0 0 24 24"><path d="M4 12 l5 5 l11 -12"/></svg></div>'+
       '<div class="ex-txt"><div class="ex-head"'+(hasInfo?' data-info="'+j+'"':'')+'>'+
         '<span class="ex-name">'+ex.n+'<span class="rep">'+ex.r+'</span></span>'+
+        (tsec?'<button class="timerbtn" data-t="'+j+'" data-sec="'+tsec+'">▶ '+tsec+'s</button>':'')+
         (hasInfo?'<button class="i'+(iOpen?' open':'')+'">i</button>':'')+
       '</div>'+
       (ex.note?'<div class="ex-note">'+ex.note+'</div>':'')+
@@ -359,7 +395,6 @@ function render(gained){
   tn.className="tonight"+(doneToday?" done":"");
   tn.innerHTML=head+banner+cele+'<div class="exlist">'+rows+'</div>'+ctl;
 
-  // achievements
   const un=unlockedIds();
   document.getElementById("badges").innerHTML=ACH.map(a=>{
     const u=un.includes(a.id);
@@ -373,9 +408,23 @@ function bind(){
   document.querySelectorAll(".dot[data-rest]").forEach(el=>{ el.onclick=()=>toggleRest(el.dataset.rest); });
   document.querySelectorAll(".cb[data-j]").forEach(c=>{
     const toggle=()=>{ const j=c.dataset.j; state.checks[j]=!state.checks[j]; if(!state.checks[j]) delete state.checks[j];
-      const items=circuit(levelIdx(),state.dayType); const all=items.every((_,k)=>state.checks[k]);
+      const items=circuit(levelIdx(),state.dayIdx); const all=items.every((_,k)=>state.checks[k]);
       if(all){ complete(); } else { save(); render(); } };
     c.onclick=toggle; c.onkeydown=e=>{ if(e.key===" "||e.key==="Enter"){e.preventDefault();toggle();} };
+  });
+  document.querySelectorAll(".timerbtn").forEach(b=>{
+    b.onclick=(e)=>{ e.stopPropagation();
+      const j=b.dataset.t, sec=+b.dataset.sec;
+      if(running[j]){ clearInterval(running[j]); delete running[j]; b.classList.remove("run","fin"); b.textContent="▶ "+sec+"s"; return; }
+      let rem=sec; b.classList.remove("fin"); b.classList.add("run"); b.textContent=rem+"s";
+      running[j]=setInterval(()=>{
+        rem--;
+        if(rem<=0){ clearInterval(running[j]); delete running[j]; b.classList.remove("run"); b.classList.add("fin"); b.textContent="klaar ✓";
+          try{ navigator.vibrate && navigator.vibrate(200); }catch(e){}
+          setTimeout(()=>{ b.classList.remove("fin"); b.textContent="▶ "+sec+"s"; },1600);
+        } else { b.textContent=rem+"s"; }
+      },1000);
+    };
   });
   document.querySelectorAll(".ex-head[data-info]").forEach(h=>{ h.onclick=()=>{ const j=h.dataset.info; infoOpen[j]=!infoOpen[j]; render(); }; });
   document.querySelectorAll(".lvlctl button").forEach(b=>{ b.onclick=()=>{ const d=+b.dataset.off; const next=Math.max(1,Math.min(MAX, levelIdx()+1 + d)); state.offset=next-autoLevel(); infoOpen={}; save(); render(); }; });
@@ -385,7 +434,7 @@ document.getElementById("theme").onclick=()=>{ state.dark=!state.dark; save(); a
 document.getElementById("reset").onclick=()=>{
   if(confirm("Alles wissen: sessies, reeks, jokers en achievements?")){
     const dark=state.dark;
-    state={log:{},rest:{},best:0,offset:0,maxHit:false,today:todayStr(),dayType:"A",checks:{},dark:dark};
+    state={log:{},rest:{},best:0,offset:0,maxHit:false,today:todayStr(),dayIdx:0,checks:{},dark:dark};
     infoOpen={}; save(); render();
   }
 };
