@@ -5,7 +5,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Onderhoud">
 <meta name="theme-color" content="#2F6D5B">
-<link rel="apple-touch-icon" href="wandelprep-icon-180.png">
+<link rel="apple-touch-icon" href="icon.png">
 <style>
   :root{
     --mist:#E7ECEC; --paper:#F4F6F5; --card:#FBFCFC; --ink:#16241F; --stone:#5F726F;
@@ -93,12 +93,7 @@
 
 <div class="wrap">
   <header>
-    <svg class="peak" width="34" height="34" viewBox="0 0 34 34" aria-hidden="true">
-      <rect width="34" height="34" rx="8" fill="#2F6D5B"/>
-      <path d="M17 9 L26 26 L8 26 Z" fill="#6FA891"/>
-      <path d="M17 9 L20 15 L17 13.5 L14 15 Z" fill="#F4F6F5"/>
-      <path d="M17 9 L23 11 L17 13 Z" fill="#D98A2B"/>
-    </svg>
+    <img class="peak" src="icon.png" width="34" height="34" alt="" style="border-radius:8px;display:block">
     <div>
       <div class="eyebrow">Elke avond · ~10 min</div>
       <h1>Full body onderhoud</h1>
@@ -132,8 +127,7 @@
 try{
   const mf={name:"Avondroutine",short_name:"Onderhoud",display:"standalone",
     background_color:"#E7ECEC",theme_color:"#2F6D5B",start_url:".",
-    icons:[{src:"wandelprep-icon-180.png",sizes:"180x180",type:"image/png"},
-           {src:"wandelprep-icon.png",sizes:"1024x1024",type:"image/png"}]};
+    icons:[{src:"icon.png",sizes:"512x512",type:"image/png"}]};
   const url=URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:"application/manifest+json"}));
   const l=document.createElement("link"); l.rel="manifest"; l.href=url; document.head.appendChild(l);
 }catch(e){}
