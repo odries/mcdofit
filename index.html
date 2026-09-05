@@ -97,6 +97,8 @@
   .timerbtn.fin{background:var(--spruce);color:#fff}
   .i{flex:0 0 auto;width:19px;height:19px;border-radius:50%;border:1.5px solid var(--stone);color:var(--stone);background:none;font-size:11px;font-style:italic;font-weight:700;font-family:Georgia,serif;cursor:pointer;display:grid;place-items:center;padding:0;margin-left:2px}
   .i.open{background:var(--stone);color:var(--card)}
+  .ex.optional{opacity:.85}
+  .optchip{font-size:10px;font-weight:700;letter-spacing:.03em;color:var(--stone);background:var(--mist);border:1px solid var(--line);border-radius:20px;padding:1px 7px;flex:0 0 auto}
   .ex-easy{font-size:12px;color:var(--amber);margin-top:2px}
   .starchip{font-size:10px;font-weight:700;letter-spacing:.03em;color:var(--amber);background:var(--amber-soft);border-radius:20px;padding:1px 7px;flex:0 0 auto}
   .ex-note{font-size:12.5px;color:var(--stone);margin-top:1px}
@@ -183,7 +185,10 @@ const INFO={
   "Superman":"Op je buik, armen naar voor gestrekt. Til tegelijk je armen, borst en benen een stukje van de grond, alsof je vliegt. Even vasthouden, rustig zakken. Traint de rugspieren.",
   "Hip flexor stretch":"Kniel op één knie, andere voet plat voor je. Knijp de bil van het achterste been aan en duw je heup zacht naar voor, romp rechtop. Rek vooraan de heup. Dan wisselen.",
   "Hamstring stretch":"Eén been gestrekt voor je, buig vanuit de heup naar voor met rechte rug tot je rek voelt achteraan het bovenbeen. Dan wisselen. Niet doorveren.",
-  "Child's pose":"Kniel, zak met je zit naar je hielen en strek je armen naar voor op de grond. Laat rug en schouders ontspannen. Rustig ademen."
+  "Child's pose":"Kniel, zak met je zit naar je hielen en strek je armen naar voor op de grond. Laat rug en schouders ontspannen. Rustig ademen.",
+  "World's greatest stretch":"Grote uitvalspas naar voor. Zet de hand aan de binnenkant van de voorste voet op de grond, draai dan de andere arm open naar het plafond. Terug, dan de andere kant. Volledige-lichaam-losmaker.",
+  "Arm circles & shoulder rolls":"Sta rechtop. Maak rustige grote cirkels met je armen (voor- en achterwaarts) en rol je schouders los. Warmt schouders en bovenrug op.",
+  "Hip openers (knie-cirkels)":"Op handen en knieën. Beweeg één knie in trage cirkels (open naar buiten, terug), dan de andere kant. Maakt de heupen los voor been-oefeningen."
 };
 
 const MAX=6;
@@ -204,19 +209,30 @@ const EX={
   hipflexor:[{n:"Hip flexor stretch",r:"30 sec p/kant"},{n:"Hip flexor stretch",r:"30 sec p/kant"},{n:"Hip flexor stretch",r:"30 sec p/kant"},{n:"Hip flexor stretch",r:"30 sec p/kant"},{n:"Hip flexor stretch",r:"40 sec p/kant"},{n:"Hip flexor stretch",r:"40 sec p/kant"}],
   hamstring:[{n:"Hamstring stretch",r:"30 sec p/kant"},{n:"Hamstring stretch",r:"30 sec p/kant"},{n:"Hamstring stretch",r:"30 sec p/kant"},{n:"Hamstring stretch",r:"30 sec p/kant"},{n:"Hamstring stretch",r:"40 sec p/kant"},{n:"Hamstring stretch",r:"40 sec p/kant"}],
   childs:[{n:"Child's pose",r:"30 sec"},{n:"Child's pose",r:"30 sec"},{n:"Child's pose",r:"30 sec"},{n:"Child's pose",r:"30 sec"},{n:"Child's pose",r:"40 sec"},{n:"Child's pose",r:"40 sec"}],
+  wgs:[{n:"World's greatest stretch",r:"4× p/kant"},{n:"World's greatest stretch",r:"4× p/kant"},{n:"World's greatest stretch",r:"5× p/kant"},{n:"World's greatest stretch",r:"5× p/kant"},{n:"World's greatest stretch",r:"6× p/kant"},{n:"World's greatest stretch",r:"6× p/kant"}],
+  shoulderroll:[{n:"Arm circles & shoulder rolls",r:"20 sec"},{n:"Arm circles & shoulder rolls",r:"20 sec"},{n:"Arm circles & shoulder rolls",r:"30 sec"},{n:"Arm circles & shoulder rolls",r:"30 sec"},{n:"Arm circles & shoulder rolls",r:"30 sec"},{n:"Arm circles & shoulder rolls",r:"30 sec"}],
+  hipopener:[{n:"Hip openers (knie-cirkels)",r:"6× p/kant"},{n:"Hip openers (knie-cirkels)",r:"6× p/kant"},{n:"Hip openers (knie-cirkels)",r:"8× p/kant"},{n:"Hip openers (knie-cirkels)",r:"8× p/kant"},{n:"Hip openers (knie-cirkels)",r:"8× p/kant"},{n:"Hip openers (knie-cirkels)",r:"8× p/kant"}],
 };
 
 /* 4 roterende dagen — draaien door: A → B → C → D → A ...
    De "ster" (object met pool) rouleert per dag, dus zelfs dezelfde dag varieert. */
+const OPEN={pool:["catcow","wgs","hipopener","shoulderroll"],daily:true};
 const DAYS=[
-  {tag:"A",name:"Onderlijf & billen",seq:["catcow",{pool:["squat","lunge","wallsit"]},"glute","calf","deadbug","birddog","childs"]},
-  {tag:"B",name:"Bovenlijf & core",seq:["catcow","push",{pool:["plank","sideplank","deadbug"]},"birddog","glute","calf","childs"]},
-  {tag:"C",name:"Core & rug",seq:["catcow","birddog","superman",{pool:["deadbug","sideplank","plank"]},"wallsit","glute","hipflexor"]},
-  {tag:"D",name:"Full mix",seq:["catcow",{pool:["squat","lunge","wallsit"]},"push","kickback","calf","plank","hamstring"]},
+  {tag:"A",name:"Onderlijf & billen",seq:[OPEN,{pool:["squat","lunge","wallsit"]},"glute","calf","deadbug","birddog",{opt:"kickback"},"childs"]},
+  {tag:"B",name:"Bovenlijf & core",seq:[OPEN,"push",{pool:["plank","sideplank","deadbug"]},"birddog","glute","calf",{opt:"superman"},"childs"]},
+  {tag:"C",name:"Core & rug",seq:[OPEN,"birddog","superman",{pool:["deadbug","sideplank","plank"]},"wallsit","glute",{opt:"kickback"},"hipflexor"]},
+  {tag:"D",name:"Full mix",seq:[OPEN,{pool:["squat","lunge","wallsit"]},"push","kickback","calf","plank",{opt:"sideplank"},"hamstring"]},
 ];
-function resolveDay(day){ const cyc=Math.floor(total()/DAYS.length); return day.seq.map(s=> typeof s==="string" ? s : s.pool[cyc % s.pool.length]); }
-function starIndexOf(day){ return day.seq.findIndex(s=> typeof s!=="string"); }
-function circuit(li,di){ return resolveDay(DAYS[di]).map(k=>EX[k][li]); }
+function resolveDay(day){
+  const cyc=Math.floor(total()/DAYS.length), tot=total();
+  return day.seq.map(s=>{
+    if(typeof s==="string") return {key:s,opt:false};
+    if(s.opt) return {key:s.opt,opt:true};
+    if(s.daily) return {key:s.pool[tot % s.pool.length],opt:false};
+    return {key:s.pool[cyc % s.pool.length],opt:false};
+  });
+}
+function circuit(li,di){ return resolveDay(DAYS[di]).map(o=>({ex:EX[o.key][li],opt:o.opt})); }
 const DAYICON={
   A:'<svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4 L6 16"/><path d="M10 4 L14 16"/><path d="M6 16 H4"/><path d="M14 16 H16"/></svg>',
   B:'<svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 10 H15"/><path d="M5 7 V13"/><path d="M15 7 V13"/><path d="M3 8.5 V11.5"/><path d="M17 8.5 V11.5"/></svg>',
@@ -267,7 +283,8 @@ function weekKey(s){ return mondayOf(s); }
 function restCountInWeek(s){ const wk=weekKey(s); return Object.keys(state.rest).filter(x=>weekKey(x)===wk).length; }
 
 function total(){ return Object.keys(state.log).length; }
-function autoLevel(){ return Math.min(MAX, 1+Math.floor(total()/5)); }
+const LVLREQ=[0,5,10,20,30,40];
+function autoLevel(){ let l=1; for(let i=0;i<LVLREQ.length;i++){ if(total()>=LVLREQ[i]) l=i+1; } return Math.min(MAX,l); }
 function levelIdx(){ return Math.max(1, Math.min(MAX, autoLevel()+state.offset)) - 1; }
 function nextIdx(){ return (state.dayIdx+1)%DAYS.length; }
 
@@ -328,7 +345,7 @@ function applyTheme(){
 function render(gained){
   gained=gained||[];
   clearTimers();
-  const li=levelIdx(), di=state.dayIdx, day=DAYS[di], items=circuit(li,di), starIdx=starIndexOf(day), t=todayStr(), doneToday=!!state.log[t], streak=computeStreak();
+  const li=levelIdx(), di=state.dayIdx, day=DAYS[di], items=circuit(li,di), t=todayStr(), doneToday=!!state.log[t], streak=computeStreak();
 
   document.getElementById("v-streak").textContent=streak;
   document.getElementById("t-streak").classList.toggle("cold", streak===0);
@@ -361,11 +378,11 @@ function render(gained){
         ? 'Tik een gemiste dag (of vandaag) aan om je <b>joker</b> in te zetten — die beschermt je reeks. Eén per week.'
         : 'Joker van deze week is ingezet. Tik hem opnieuw aan om te annuleren.')+'</div>';
 
-  const al=autoLevel(), into=total()%5, toNext=5-into;
-  const hint='<div class="hint">Opbouw via moeilijkere varianten en tempo — niet enkel meer herhalingen. Op niveau 6 blijft het gelijk.</div>';
+  const al=autoLevel(), bandStart=LVLREQ[al-1], bandEnd=(al<MAX?LVLREQ[al]:bandStart), toNext=bandEnd-total(), bandLen=Math.max(1,bandEnd-bandStart);
+  const hint='<div class="hint">Opbouw via moeilijkere varianten en tempo — niet enkel meer herhalingen. Vanaf niveau 3 duurt elk niveau langer; op niveau 6 blijft het gelijk.</div>';
   document.getElementById("prog").innerHTML = (al>=MAX
     ? '<div class="row"><b>Niveau 6 — onderhoudsmodus</b><span>plafond</span></div><div class="track"><div class="fill" style="width:100%"></div></div>'+hint
-    : '<div class="row"><b>Nog '+toNext+' sessie'+(toNext===1?'':'s')+' tot niveau '+(al+1)+'</b><span>'+into+'/5</span></div><div class="track"><div class="fill" style="width:'+(into/5*100)+'%"></div></div>'+hint);
+    : '<div class="row"><b>Nog '+toNext+' sessie'+(toNext===1?'':'s')+' tot niveau '+(al+1)+'</b><span>'+(total()-bandStart)+'/'+bandLen+'</span></div><div class="track"><div class="fill" style="width:'+((total()-bandStart)/bandLen*100)+'%"></div></div>'+hint);
 
   const tn=document.getElementById("tonight");
   let head='<div class="th"><div class="lab">Vanavond · niveau '+(li+1)+'</div><div class="lvl">'+day.name+'</div><div class="nx">Morgen: '+DAYS[nextIdx()].name+'</div></div>';
@@ -376,13 +393,14 @@ function render(gained){
     let g=""; if(gained.length){ g='<div class="gained">'+gained.map(id=>{const a=ACH.find(x=>x.id===id);return '<span>'+a.em+' '+a.name+'</span>';}).join('')+'</div>'; }
     cele='<div class="celebrate"><div class="big">Voltooid vanavond ✓</div><div class="sm">Reeks: '+streak+' · totaal: '+total()+' sessies</div>'+g+'</div>';
   }
-  const rows=items.map((ex,j)=>{
-    const on=!!state.checks[j], hasInfo=!!INFO[ex.n], iOpen=!!infoOpen[j], lock=doneToday;
+  const rows=items.map((it,j)=>{
+    const ex=it.ex, on=!!state.checks[j], hasInfo=!!INFO[ex.n], iOpen=!!infoOpen[j], lock=doneToday;
     const tm=(!lock)?ex.r.match(/(\d+)\s*sec/):null; const tsec=tm?+tm[1]:0;
-    return '<div class="ex'+(on?" done":"")+'">'+
+    return '<div class="ex'+(on?" done":"")+(it.opt?" optional":"")+'">'+
       '<div class="cb'+(on?" on":"")+(lock?" lock":"")+'"'+(lock?'':' data-j="'+j+'" role="checkbox" tabindex="0"')+'><svg viewBox="0 0 24 24"><path d="M4 12 l5 5 l11 -12"/></svg></div>'+
       '<div class="ex-txt"><div class="ex-head"'+(hasInfo?' data-info="'+j+'"':'')+'>'+
         '<span class="ex-name">'+ex.n+'<span class="rep">'+ex.r+'</span></span>'+
+        (it.opt?'<span class="optchip">optioneel</span>':'')+
         (tsec?'<button class="timerbtn" data-t="'+j+'" data-sec="'+tsec+'">▶ '+tsec+'s</button>':'')+
         (hasInfo?'<button class="i'+(iOpen?' open':'')+'">i</button>':'')+
       '</div>'+
@@ -408,7 +426,7 @@ function bind(){
   document.querySelectorAll(".dot[data-rest]").forEach(el=>{ el.onclick=()=>toggleRest(el.dataset.rest); });
   document.querySelectorAll(".cb[data-j]").forEach(c=>{
     const toggle=()=>{ const j=c.dataset.j; state.checks[j]=!state.checks[j]; if(!state.checks[j]) delete state.checks[j];
-      const items=circuit(levelIdx(),state.dayIdx); const all=items.every((_,k)=>state.checks[k]);
+      const items=circuit(levelIdx(),state.dayIdx); const all=items.every((it,k)=> it.opt || state.checks[k]);
       if(all){ complete(); } else { save(); render(); } };
     c.onclick=toggle; c.onkeydown=e=>{ if(e.key===" "||e.key==="Enter"){e.preventDefault();toggle();} };
   });
