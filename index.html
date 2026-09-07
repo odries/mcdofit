@@ -188,7 +188,11 @@ const INFO={
   "Child's pose":"Kniel, zak met je zit naar je hielen en strek je armen naar voor op de grond. Laat rug en schouders ontspannen. Rustig ademen.",
   "World's greatest stretch":"Grote uitvalspas naar voor. Zet de hand aan de binnenkant van de voorste voet op de grond, draai dan de andere arm open naar het plafond. Terug, dan de andere kant. Volledige-lichaam-losmaker.",
   "Arm circles & shoulder rolls":"Sta rechtop. Maak rustige grote cirkels met je armen (voor- en achterwaarts) en rol je schouders los. Warmt schouders en bovenrug op.",
-  "Hip openers (knie-cirkels)":"Op handen en knieën. Beweeg één knie in trage cirkels (open naar buiten, terug), dan de andere kant. Maakt de heupen los voor been-oefeningen."
+  "Hip openers (knie-cirkels)":"Op handen en knieën. Beweeg één knie in trage cirkels (open naar buiten, terug), dan de andere kant. Maakt de heupen los voor been-oefeningen.",
+  "Beenzwaaien":"Steun met een hand aan de muur en zwaai één been rustig voor- en achterwaarts, dan zijwaarts. Dynamische opwarming voor heupen en benen. Dan het andere been.",
+  "Quad stretch":"Sta rechtop, pak je enkel en trek je hiel naar je bil, knieën naast elkaar. Rek vooraan het dijbeen. Steun met een hand voor je evenwicht. Dan wisselen.",
+  "Borststretch":"Vouw je handen achter je rug samen en til ze licht op terwijl je je borst opent en schouders naar achter brengt. Rekt borst en voorkant schouders.",
+  "Liggende rugdraai":"Lig op je rug, armen gespreid. Laat je gebogen knieën traag naar één kant zakken terwijl je schouders op de grond blijven. Rek in onderrug en romp. Dan de andere kant."
 };
 
 const MAX=6;
@@ -212,16 +216,19 @@ const EX={
   wgs:[{n:"World's greatest stretch",r:"4× p/kant"},{n:"World's greatest stretch",r:"4× p/kant"},{n:"World's greatest stretch",r:"5× p/kant"},{n:"World's greatest stretch",r:"5× p/kant"},{n:"World's greatest stretch",r:"6× p/kant"},{n:"World's greatest stretch",r:"6× p/kant"}],
   shoulderroll:[{n:"Arm circles & shoulder rolls",r:"20 sec"},{n:"Arm circles & shoulder rolls",r:"20 sec"},{n:"Arm circles & shoulder rolls",r:"30 sec"},{n:"Arm circles & shoulder rolls",r:"30 sec"},{n:"Arm circles & shoulder rolls",r:"30 sec"},{n:"Arm circles & shoulder rolls",r:"30 sec"}],
   hipopener:[{n:"Hip openers (knie-cirkels)",r:"6× p/kant"},{n:"Hip openers (knie-cirkels)",r:"6× p/kant"},{n:"Hip openers (knie-cirkels)",r:"8× p/kant"},{n:"Hip openers (knie-cirkels)",r:"8× p/kant"},{n:"Hip openers (knie-cirkels)",r:"8× p/kant"},{n:"Hip openers (knie-cirkels)",r:"8× p/kant"}],
+  legswings:[{n:"Beenzwaaien",r:"10× p/been"},{n:"Beenzwaaien",r:"10× p/been"},{n:"Beenzwaaien",r:"12× p/been"},{n:"Beenzwaaien",r:"12× p/been"},{n:"Beenzwaaien",r:"12× p/been"},{n:"Beenzwaaien",r:"12× p/been"}],
+  quad:[{n:"Quad stretch",r:"30 sec p/kant"},{n:"Quad stretch",r:"30 sec p/kant"},{n:"Quad stretch",r:"30 sec p/kant"},{n:"Quad stretch",r:"30 sec p/kant"},{n:"Quad stretch",r:"40 sec p/kant"},{n:"Quad stretch",r:"40 sec p/kant"}],
+  chest:[{n:"Borststretch",r:"30 sec"},{n:"Borststretch",r:"30 sec"},{n:"Borststretch",r:"30 sec"},{n:"Borststretch",r:"30 sec"},{n:"Borststretch",r:"40 sec"},{n:"Borststretch",r:"40 sec"}],
+  spinaltwist:[{n:"Liggende rugdraai",r:"30 sec p/kant"},{n:"Liggende rugdraai",r:"30 sec p/kant"},{n:"Liggende rugdraai",r:"30 sec p/kant"},{n:"Liggende rugdraai",r:"30 sec p/kant"},{n:"Liggende rugdraai",r:"40 sec p/kant"},{n:"Liggende rugdraai",r:"40 sec p/kant"}],
 };
 
 /* 4 roterende dagen — draaien door: A → B → C → D → A ...
-   De "ster" (object met pool) rouleert per dag, dus zelfs dezelfde dag varieert. */
-const OPEN={pool:["catcow","wgs","hipopener","shoulderroll"],daily:true};
+   Opener en afsluitstretch zijn per dag thematisch (rouleren binnen relevante stretches). */
 const DAYS=[
-  {tag:"A",name:"Onderlijf & billen",seq:[OPEN,{pool:["squat","lunge","wallsit"]},"glute","calf","deadbug","birddog",{opt:"kickback"},"childs"]},
-  {tag:"B",name:"Bovenlijf & core",seq:[OPEN,"push",{pool:["plank","sideplank","deadbug"]},"birddog","glute","calf",{opt:"superman"},"childs"]},
-  {tag:"C",name:"Core & rug",seq:[OPEN,"birddog","superman",{pool:["deadbug","sideplank","plank"]},"wallsit","glute",{opt:"kickback"},"hipflexor"]},
-  {tag:"D",name:"Full mix",seq:[OPEN,{pool:["squat","lunge","wallsit"]},"push","kickback","calf","plank",{opt:"sideplank"},"hamstring"]},
+  {tag:"A",name:"Onderlijf & billen",seq:[{pool:["hipopener","legswings","wgs"],daily:true},{pool:["squat","lunge","wallsit"]},"glute","calf","deadbug","birddog",{opt:"kickback"},{pool:["hamstring","hipflexor","quad"],daily:true}]},
+  {tag:"B",name:"Bovenlijf & core",seq:[{pool:["shoulderroll","catcow","wgs"],daily:true},"push",{pool:["plank","sideplank","deadbug"]},"birddog","glute","calf",{opt:"superman"},{pool:["chest","childs"],daily:true}]},
+  {tag:"C",name:"Core & rug",seq:[{pool:["catcow","wgs","hipopener"],daily:true},"birddog","superman",{pool:["deadbug","sideplank","plank"]},"wallsit","glute",{opt:"kickback"},{pool:["spinaltwist","childs"],daily:true}]},
+  {tag:"D",name:"Full mix",seq:[{pool:["wgs","catcow","shoulderroll"],daily:true},{pool:["squat","lunge","wallsit"]},"push","kickback","calf","plank",{opt:"sideplank"},{pool:["hamstring","childs","quad"],daily:true}]},
 ];
 function resolveDay(day){
   const cyc=Math.floor(total()/DAYS.length), tot=total();
