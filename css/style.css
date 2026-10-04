@@ -59,7 +59,7 @@ button{font-family:inherit;color:inherit;cursor:pointer}
 .btn-w.ink{color:#16152B}
 .btn-s{border:0;border-radius:999px;padding:13px 22px;font-weight:800;font-size:15px;background:var(--blue);color:var(--blue-ink);margin-top:14px}
 .btn-s.soft{background:var(--soft);color:var(--ink)}
-.linkbtn{display:inline-block;margin-top:12px;border:0;background:none;color:inherit;font-weight:700;font-size:15px;text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:2px;padding:6px}
+.linkbtn{display:inline-block;margin-top:4px;border:0;background:none;color:inherit;font-weight:700;font-size:15px;text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:2px;padding:6px}
 
 /* golvende bovenrand van een kleurvlak */
 .wave{position:absolute;left:0;bottom:calc(100% - 1px);width:100%;height:36px;display:block}
@@ -67,18 +67,18 @@ button{font-family:inherit;color:inherit;cursor:pointer}
 
 /* ============ VANDAAG (past op één scherm) ============ */
 #p-today.on{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}
-.t-top{flex:1;display:flex;flex-direction:column;gap:14px}
+.t-top{flex:1;display:flex;flex-direction:column;gap:10px}
 .top{display:flex;align-items:center;justify-content:space-between}
 .brand{display:flex;align-items:center;gap:8px;font-weight:900;font-size:18px;letter-spacing:-.02em}
 .top .date{font-weight:700;color:var(--muted);font-size:14px}
 
 .hero{text-align:center;margin:auto 0}
-.blob{width:clamp(110px,19vh,180px);aspect-ratio:1;border-radius:50%;background:var(--pink);color:var(--pink-ink);margin:0 auto;display:grid;place-items:center}
-.blob b{font-size:clamp(60px,11vh,100px);font-weight:900;letter-spacing:-.05em;line-height:1}
+.blob{width:clamp(96px,15.5vh,160px);aspect-ratio:1;border-radius:50%;background:var(--pink);color:var(--pink-ink);margin:0 auto;display:grid;place-items:center}
+.blob b{font-size:clamp(52px,9vh,90px);font-weight:900;letter-spacing:-.05em;line-height:1}
 .blob.cold{background:var(--soft);color:var(--muted)}
-.hero-l{font-size:24px;font-weight:900;letter-spacing:-.02em;margin-top:14px}
+.hero-l{font-size:22px;font-weight:900;letter-spacing:-.02em;margin-top:10px}
 .hero-s{color:var(--muted);font-size:14.5px;font-weight:600;margin-top:2px}
-.lvl{max-width:250px;margin:16px auto 0;text-align:left}
+.lvl{max-width:250px;margin:12px auto 0;text-align:left}
 .lvl-row{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;gap:10px}
 .lvl-row b{font-weight:800}
 .lvl-row span{color:var(--muted);font-weight:600}
@@ -88,21 +88,21 @@ button{font-family:inherit;color:inherit;cursor:pointer}
 
 .wk{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
 .wk div{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase}
-.wk b{width:100%;max-width:32px;aspect-ratio:1;border-radius:50%;background:var(--soft);display:block}
+.wk b{width:100%;max-width:30px;aspect-ratio:1;border-radius:50%;background:var(--soft);display:block}
 .wk .done b{background:var(--pink)}
 .wk .rest b{background:var(--blue)}
 .wk .miss b{background:none;border:2px dashed var(--line)}
 .wk .today b{box-shadow:0 0 0 2.5px var(--bg),0 0 0 4.5px var(--ink)}
 .wk .future{opacity:.5}
 
-.t-block{position:relative;background:var(--blue);color:var(--blue-ink);margin-top:42px;padding:0 0 calc(92px + env(safe-area-inset-bottom));text-align:center}
+.t-block{position:relative;background:var(--blue);color:var(--blue-ink);margin-top:36px;padding:0 0 calc(106px + env(safe-area-inset-bottom));text-align:center}
 .t-block.done{background:var(--pink);color:var(--pink-ink)}
 .t-block.done .wave path{fill:var(--pink)}
 .t-block .eyebrow{color:inherit;opacity:.7}
 .t-title{font-size:clamp(42px,12.5vw,62px);font-weight:900;letter-spacing:-.04em;line-height:.95;margin:6px 0 8px}
 .comp{font-weight:700;font-size:15.5px;opacity:.85}
 .t-rest{margin-top:10px;font-size:14px;font-weight:600;opacity:.9}
-.t-block .btn-w{margin-top:22px}
+.t-block .btn-w{margin-top:16px;height:58px}
 .t-block.done .btn-w{color:#16152B;margin-top:18px}
 .t-block.done .t-title{font-size:clamp(38px,11vw,52px)}
 .t-block.done .gained{margin-top:10px}
@@ -164,7 +164,7 @@ button{font-family:inherit;color:inherit;cursor:pointer}
 .ring.fin .prg{stroke:var(--pink)}
 .ring .rn{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .ring .rn b{font-size:clamp(48px,14vw,68px);font-weight:900;letter-spacing:-.05em;line-height:1}
-.ring .rn span{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.75;margin-top:4px}
+.ring .rn span{font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.75;margin-top:6px;line-height:1.35;text-align:center}
 .gd-foot{display:flex;gap:10px;align-items:center;margin-top:22px}
 .gd-foot .btn-w{flex:1}
 .round-w{width:62px;height:62px;border-radius:50%;border:0;background:rgba(255,255,255,.16);color:#fff;display:grid;place-items:center;flex:0 0 auto;padding:0}
@@ -261,3 +261,29 @@ select.sel{width:100%;appearance:none;-webkit-appearance:none;border:0;border-ra
 .stat .v{font-size:38px}
 .cal-title b{font-size:24px}
 .brand{font-size:16px}
+
+/* ============ WATER-TRANSITIE tussen oefeningen ============
+   Golven gaan altijd naar boven: de golf onderaan stijgt en wordt de nieuwe achtergrond,
+   onderaan komt een golf in de andere kleur binnen. Oefeningen wisselen dus af tussen
+   wit-met-blauwe-golf en blauw-met-witte-golf (.alt). */
+.flood{position:fixed;left:0;top:0;width:100%;height:calc(100vh + 60px);z-index:60;pointer-events:none;will-change:transform}
+.flood .fw{position:absolute;left:0;bottom:calc(100% - 1px);width:200%;height:36px;display:block;animation:fwave .9s linear infinite}
+.flood .fw path{fill:currentColor}
+@keyframes fwave{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+
+/* blauw scherm met witte golf */
+.ov.alt{background:var(--blue);color:#fff}
+.ov.alt .gd-cat,.ov.alt .gd-note,.ov.alt .gd-easy,.ov.alt .ov-count{color:rgba(255,255,255,.78)}
+.ov.alt .gd-easy b{color:#fff}
+.ov.alt .gd-rep{color:var(--pink)}
+.ov.alt .gd-bar i{background:rgba(255,255,255,.25)}
+.ov.alt .gd-bar i.done{background:#fff}
+.ov.alt .gd-block{background:var(--bg);color:var(--ink)}
+.ov.alt .gd-block .wave path{fill:var(--bg)}
+.ov.alt .ring{color:var(--ink)}
+.ov.alt .ring .trk{stroke:var(--soft)}
+.ov.alt .ring .prg{stroke:var(--blue)}
+.ov.alt .ring.fin .prg{stroke:var(--pink)}
+.ov.alt .btn-w{background:var(--blue);color:#fff}
+.ov.alt .round-w{background:var(--soft);color:var(--ink)}
+.ov.alt .ghost-w{color:var(--ink)}

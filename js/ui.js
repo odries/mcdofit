@@ -5,7 +5,9 @@
    ===================================================================== */
 const CHECK='<svg viewBox="0 0 24 24"><path d="M4.5 12.5l5 5 10-11"/></svg>';
 const CHEV='<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>';
-const WAVE='<svg class="wave" viewBox="0 0 400 36" preserveAspectRatio="none" aria-hidden="true"><path d="M0 36V22C70 22 95 4 150 4S230 28 285 28 360 14 400 14V36Z"/></svg>';
+const WAVE_D="C70 22 95 4 150 4S230 28 285 28S360 22 400 22"; // golf die naadloos herhaalt (begint en eindigt op hoogte 22)
+const WAVE='<svg class="wave" viewBox="0 0 400 36" preserveAspectRatio="none" aria-hidden="true"><path d="M0 36V22'+WAVE_D+'V36Z"/></svg>';
+const FLOOD_WAVE='<svg class="fw" viewBox="0 0 800 36" preserveAspectRatio="none" aria-hidden="true"><path d="M0 36V22'+WAVE_D+'C470 22 495 4 550 4S630 28 685 28S760 22 800 22V36Z"/></svg>';
 
 /* Het frietje. mood: "happy" | "sleep" | "flex" */
 function fries(mood,size){
@@ -236,6 +238,41 @@ function buzz(ms){ try{ navigator.vibrate && navigator.vibrate(ms); }catch(e){} 
 async function wakeOn(){ try{ wakeLock=await navigator.wakeLock.request("screen"); }catch(e){} }
 function wakeOff(){ try{ wakeLock && wakeLock.release(); }catch(e){} wakeLock=null; }
 
+/* Water-transitie: de golf onderaan stijgt tot het hele scherm die kleur heeft,
+   de oefening wisselt, en onderaan schuift een nieuwe golf (in de andere kleur) binnen. */
+let flooding=false;
+function flood(swap){
+  if(flooding) return;
+  const host=document.getElementById("guided"), H=window.innerHeight;
+  const reduce=window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const block=host.querySelector(".gd-block");
+  if(reduce || !Element.prototype.animate || !block){ swap(); return; }
+  flooding=true; host.style.overflow="hidden";
+  const color=getComputedStyle(block).backgroundColor;
+  const f=document.createElement("div"); f.className="flood"; f.innerHTML=FLOOD_WAVE;
+  f.style.background=color; f.style.color=color;
+  document.body.appendChild(f);
+  const done=()=>{ host.style.overflow=""; flooding=false; };
+  const up=f.animate([{transform:`translateY(${block.getBoundingClientRect().top}px)`},{transform:"translateY(-40px)"}],{duration:430,easing:"cubic-bezier(.55,0,.8,.45)",fill:"forwards"});
+  up.onfinish=()=>{
+    swap();
+    const nb=host.querySelector(".gd-block"), main=host.querySelector(".gd-main");
+    if(!nb){ // naar het feestscherm: een roze golf spoelt over alles heen
+      f.style.zIndex=59;
+      const p=document.createElement("div"); p.className="flood"; p.innerHTML=FLOOD_WAVE;
+      p.style.background=p.style.color=getComputedStyle(host).backgroundColor;
+      document.body.appendChild(p);
+      const inn=p.animate([{transform:`translateY(${H+40}px)`},{transform:"translateY(-40px)"}],{duration:520,easing:"cubic-bezier(.25,.6,.35,1)",fill:"forwards"});
+      inn.onfinish=()=>{ f.remove(); p.remove(); done(); };
+      return;
+    }
+    f.remove(); // de nieuwe achtergrond heeft nu dezelfde kleur als het water
+    const dist=H-nb.getBoundingClientRect().top+40;
+    nb.animate([{transform:`translateY(${dist}px)`},{transform:"translateY(0)"}],{duration:600,easing:"cubic-bezier(.2,.65,.3,1)"}).onfinish=done;
+    if(main) main.animate([{opacity:0,transform:"translateY(18px)"},{opacity:1,transform:"translateY(0)"}],{duration:420,delay:120,easing:"ease-out",fill:"backwards"});
+  };
+}
+
 function timerFor(it){
   const m=it.r.match(/(\d+)\s*sec/); if(!m) return null;
   const sec=+m[1];
@@ -282,8 +319,8 @@ function paintTimer(){
   el.classList.toggle("fin",T.fin);
   el.querySelector(".prg").style.strokeDashoffset = T.fin?0:RING_C*(1-T.rem/T.sec);
   el.querySelector(".rn b").textContent = T.fin?"✓":Math.ceil(T.rem);
-  const side = T.sides>1?`kant ${T.side}/2 · `:"";
-  el.querySelector(".rn span").textContent = T.fin?"klaar":T.run?side+"tik = pauze":T.switched?"wissel · tik = start":side+(T.rem<T.sec?"tik = verder":"tik = start");
+  const side = T.sides>1?`kant ${T.side}/2<br>`:"";
+  el.querySelector(".rn span").innerHTML = T.fin?"klaar":T.run?side+"tik = pauze":T.switched?"wissel<br>tik = start":side+(T.rem<T.sec?"tik = verder":"tik = start");
 }
 
 function renderGuided(){
@@ -307,7 +344,7 @@ function renderGuided(){
   }
 
   const it=G.items[G.i], info=INFO[it.n], T=G.timer, last=G.i===n-1;
-  host.className="ov";
+  host.className="ov"+(G.i%2?" alt":""); // afwisselend wit-met-blauwe-golf en blauw-met-witte-golf
   host.innerHTML=`<div class="ov-top"><button class="iconbtn" data-act="gclose" aria-label="Sluiten">${CHEV}</button>
       <div class="gd-bar">${G.items.map((x,j)=>`<i class="${j<G.i?"done":j===G.i?"cur":""}"></i>`).join("")}</div>
       <span class="ov-count">${G.i+1}/${n}</span></div>
@@ -372,9 +409,9 @@ const ACT={
     infoOpen={}; celebrate=null; save(); render();
   },
   gclose:()=>closeGuided(),
-  gnext:()=>{ if(!G.replay) state.checks[G.i]=true; save(); gGo(G.i+1); },
-  gskip:()=>{ if(!G.replay) delete state.checks[G.i]; save(); gGo(G.i+1); },
-  gprev:()=>gGo(Math.max(0,G.i-1)),
+  gnext:()=>{ if(flooding) return; if(!G.replay) state.checks[G.i]=true; save(); flood(()=>gGo(G.i+1)); },
+  gskip:()=>{ if(flooding) return; if(!G.replay) delete state.checks[G.i]; save(); flood(()=>gGo(G.i+1)); },
+  gprev:()=>flood(()=>gGo(Math.max(0,G.i-1))),
   gtimer:()=>gToggleTimer(),
 };
 document.addEventListener("click",e=>{
