@@ -68,7 +68,7 @@ function freshState(){
   return {
     log:{}, rest:{}, best:0, maxHit:false, today:null, dayIdx:0, checks:{},
     rot:{}, lvl:{level:1,prog:0,resetNote:null}, lastSession:null,
-    settings:{manualLevel:null, focus:[], opt:{mode:"auto",cat:"benen",ex:"squat"}, theme:"system"}
+    settings:{lockLevel:false, focus:[], opt:{mode:"auto",cat:"benen",ex:"squat"}, theme:"system"}
   };
 }
 let state=freshState();
@@ -78,6 +78,9 @@ async function load(){
   if(window.storage){ try{ const r=await window.storage.get(KEY); if(r&&r.value) raw=r.value; }catch(e){} }
   if(raw===null){ try{ raw=localStorage.getItem(KEY); }catch(e){} }
   if(raw){ try{ const s=JSON.parse(raw), f=freshState(); state=Object.assign(f,s); state.settings=Object.assign(f.settings,s.settings||{}); state.lvl=Object.assign(f.lvl,s.lvl||{}); }catch(e){} }
+  // oude versie had een "handmatig niveau" naast het automatische: omzetten naar echt niveau + vastzetten
+  if(state.settings.manualLevel){ state.lvl.level=state.settings.manualLevel; state.lvl.prog=0; state.settings.lockLevel=true; }
+  delete state.settings.manualLevel;
 }
 async function save(){
   const s=JSON.stringify(state);
@@ -104,7 +107,13 @@ function longDate(s){ const d=parseISO(s); return ["zondag","maandag","dinsdag",
    NIVEAU, STREAK, ACHIEVEMENTS
    ===================================================================== */
 function total(){ return Object.keys(state.log).length; }
-function curLevel(){ return state.settings.manualLevel || state.lvl.level; }
+function curLevel(){ return state.lvl.level; }
+/* Zelf een niveau kiezen: dat wordt je nieuwe startpunt, de teller naar het volgende niveau begint op 0. */
+function setLevel(n){
+  if(n===state.lvl.level) return;
+  state.lvl.level=n; state.lvl.prog=0; state.lvl.resetNote=null;
+  if(n>=MAX) state.maxHit=true;
+}
 function needFor(level){ return level<MAX ? LEVEL_STAPPEN[level-1] : 0; }
 function checkInactivity(){
   if(!state.lastSession) return;
@@ -138,7 +147,7 @@ function complete(){
   const plan=buildPlan(state.dayIdx), before=unlockedIds(), lvlBefore=state.lvl.level;
   checkInactivity();
   delete state.rest[t];
-  if(state.lvl.level<MAX){
+  if(state.lvl.level<MAX && !state.settings.lockLevel){
     state.lvl.prog++;
     if(state.lvl.prog>=needFor(state.lvl.level)){ state.lvl.level++; state.lvl.prog=0; }
   }
@@ -147,7 +156,7 @@ function complete(){
   state.rot=plan.rotAfter; state.lastSession=t; state.lvl.resetNote=null;
   state.best=Math.max(state.best,computeStreak());
   if(curLevel()>=MAX) state.maxHit=true;
-  celebrate={gained:unlockedIds().filter(id=>!before.includes(id)), levelUp:(!state.settings.manualLevel && state.lvl.level>lvlBefore)?state.lvl.level:0};
+  celebrate={gained:unlockedIds().filter(id=>!before.includes(id)), levelUp:state.lvl.level>lvlBefore?state.lvl.level:0};
   save();
   return celebrate;
 }

@@ -80,7 +80,7 @@ function renderToday(){
   const t=todayStr(), done=state.log[t], streak=computeStreak(), lv=curLevel(), L=state.lvl, need=needFor(L.level);
   const view=done||buildPlan(state.dayIdx);
   const nextTitle=dayTitle(applyFocus(DAYS[(state.dayIdx+1)%DAYS.length].slots, state.settings.focus));
-  const lvlTxt = state.settings.manualLevel ? "vastgezet" : L.level>=MAX ? "onderhoudsmodus" : `${L.prog}/${need} naar niveau ${L.level+1}`;
+  const lvlTxt = state.settings.lockLevel ? "vastgezet" : L.level>=MAX ? "onderhoudsmodus" : `${L.prog}/${need} naar niveau ${L.level+1}`;
   const fillPct = L.level>=MAX ? 100 : L.prog/need*100;
 
   let h=`<div class="t-top wrap pad-top">
@@ -202,12 +202,18 @@ function renderCal(){
 /* ---------- Instellingen ---------- */
 function renderSet(){
   const S=state.settings, L=state.lvl, catKeys=Object.keys(CATS);
-  const lvBtns=`<button class="wide${!S.manualLevel?" on":""}" data-act="lvl" data-v="auto">Automatisch</button>`+[1,2,3,4,5,6].map(n=>`<button class="${S.manualLevel===n?"on":""}" data-act="lvl" data-v="${n}">${n}</button>`).join("");
+  const lvBtns=[1,2,3,4,5,6].map(n=>`<button class="${L.level===n?"on":""}" data-act="lvl" data-v="${n}">${n}</button>`).join("");
+  const lvlStatus = S.lockLevel ? `Vastgezet op niveau ${L.level}. Er wordt niet verder opgebouwd.`
+    : L.level<MAX ? `${L.prog}/${needFor(L.level)} sessies naar niveau ${L.level+1}. Meer dan ${INACTIEF_DAGEN} dagen pauze zet die teller terug op 0.`
+    : "Niveau 6 is het plafond.";
   let h=`<div class="wrap pad-top page-end"><h1 class="page-h">Instel&shy;lingen</h1>`;
 
-  h+=`<section class="set"><h3 class="sec-h">Niveau</h3><p class="sec-p">Automatisch bouwt vanzelf op. Kies een getal om het niveau vast te zetten.</p>
+  h+=`<section class="set"><h3 class="sec-h">Niveau</h3><p class="sec-p">Je huidige niveau. Tik een ander getal om daar te (her)starten — de teller naar het volgende niveau begint dan op 0.</p>
       <div class="seg six">${lvBtns}</div>
-      <div class="small">Automatisch niveau: <b style="color:var(--ink)">${L.level}</b>${L.level<MAX?` · ${L.prog}/${needFor(L.level)} sessies naar niveau ${L.level+1}`:" · plafond bereikt"}</div></section>`;
+      <div class="sub"><div class="sub-l">Na elke sessie</div><div class="seg">
+        <button class="${!S.lockLevel?"on":""}" data-act="lock" data-v="0">Verder opbouwen</button>
+        <button class="${S.lockLevel?"on":""}" data-act="lock" data-v="1">Niveau vastzetten</button></div></div>
+      <div class="small">${lvlStatus}</div></section>`;
 
   h+=`<section class="set"><h3 class="sec-h">Focus</h3><p class="sec-p">Per aangevinkte categorie wordt elke dag één andere oefening gewisseld voor die categorie. De sessie blijft even lang.</p>
       <div class="seg pinkon">${catKeys.map(c=>`<button class="${S.focus.includes(c)?"on":""}" data-act="focus" data-c="${c}">${CATS[c].short}</button>`).join("")}</div></section>`;
@@ -398,7 +404,8 @@ const ACT={
   calnav:el=>{ let {y,m}=calView; m+=+el.dataset.dir; if(m<0){m=11;y--;} if(m>11){m=0;y++;} calView={y,m}; render(); },
   calday:el=>{ calSel=el.dataset.d; render(); },
   joker:el=>toggleRest(el.dataset.d),
-  lvl:el=>{ const v=el.dataset.v; state.settings.manualLevel = v==="auto"?null:+v; if(curLevel()>=MAX) state.maxHit=true; save(); render(); },
+  lvl:el=>{ setLevel(+el.dataset.v); save(); render(); },
+  lock:el=>{ state.settings.lockLevel = el.dataset.v==="1"; save(); render(); },
   focus:el=>{ const c=el.dataset.c, f=state.settings.focus; state.settings.focus = f.includes(c)?f.filter(x=>x!==c):Object.keys(CATS).filter(x=>x===c||f.includes(x)); planChanged(); save(); render(); },
   optmode:el=>{ state.settings.opt.mode=el.dataset.v; planChanged(); save(); render(); },
   optcat:el=>{ state.settings.opt.cat=el.dataset.c; planChanged(); save(); render(); },
