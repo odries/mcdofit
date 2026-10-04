@@ -1,0 +1,12 @@
+{
+  "name": "MCDO FIT",
+  "short_name": "MCDO FIT",
+  "display": "standalone",
+  "start_url": ".",
+  "scope": ".",
+  "background_color": "#FBFAF7",
+  "theme_color": "#FBFAF7",
+  "icons": [
+    { "src": "icon.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any" }
+  ]
+}
