@@ -25,7 +25,7 @@ function dayTitle(slots){
   const cnt={}, order=[];
   slots.forEach(c=>{ if(!cnt[c]){ cnt[c]=0; order.push(c); } cnt[c]++; });
   const dom=order.filter(c=>cnt[c]>=2).sort((a,b)=>cnt[b]-cnt[a]);
-  return dom.length ? dom.map(c=>CATS[c].short).join(" & ") : "Full body";
+  return (dom.length && dom.length<3) ? dom.map(c=>CATS[c].short).join(" & ") : "Full body";
 }
 function composition(slots){
   const cnt={}, order=[];
@@ -33,11 +33,18 @@ function composition(slots){
   return order.map(c=>({cat:c,n:cnt[c]}));
 }
 
+/* De categorie-slots van een dag, rekening houdend met het gekozen aantal oefeningen en focus. */
+function exCount(){ return Math.max(OEFENINGEN_MIN,Math.min(OEFENINGEN_MAX,state.settings.count||OEFENINGEN_MIN)); }
+function daySlots(dayIdx){
+  const day=DAYS[dayIdx];
+  return applyFocus(day.slots.concat(day.extra).slice(0,exCount()-2), state.settings.focus);
+}
+
 /* Rotatie: per categorie een teller (state.rot). Elk slot neemt de volgende oefening
    uit zijn categorie, nooit twee keer dezelfde op één dag. */
 function buildPlan(dayIdx){
   const day=DAYS[dayIdx], li=curLevel()-1, S=state.settings;
-  const slots=applyFocus(day.slots, S.focus);
+  const slots=daySlots(dayIdx);
   const rot=Object.assign({},state.rot), used=new Set(), items=[];
   const take=(pool,opt)=>{
     const list=poolList(pool), i=rot[pool]||0; let key=null;
@@ -68,7 +75,7 @@ function freshState(){
   return {
     log:{}, rest:{}, best:0, maxHit:false, today:null, dayIdx:0, checks:{},
     rot:{}, lvl:{level:1,prog:0,resetNote:null}, lastSession:null,
-    settings:{lockLevel:false, focus:[], opt:{mode:"auto",cat:"benen",ex:"squat"}, theme:"system"}
+    settings:{lockLevel:false, count:OEFENINGEN_MIN, focus:[], opt:{mode:"auto",cat:"benen",ex:"squat"}, theme:"system"}
   };
 }
 let state=freshState();

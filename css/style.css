@@ -8,7 +8,7 @@
   --blue:#3344F5; --blue-ink:#fff;
   --pink:#F6A9C9; --pink-soft:#FCE4EE; --pink-ink:#16152B;
   --font:"Archivo",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-  --font-h:"Climate Crisis","Archivo",system-ui,sans-serif; /* koppen; dikte via de YEAR-as: 1979 = dikst */
+  --font-h:"Bevan",Georgia,serif; /* koppen */
   /* volledig gekleurde pagina's: Kalender = roze, Instellingen = blauw */
   --cal-bg:#F6A9C9; --cal-ink:#16152B; --cal-muted:rgba(22,21,43,.62); --cal-line:rgba(22,21,43,.16); --cal-soft:rgba(255,255,255,.45); --cal-done:#fff; --cal-band:rgba(255,255,255,.5);
   --set-bg:#3344F5; --set-ink:#fff; --set-muted:rgba(255,255,255,.75); --set-line:rgba(255,255,255,.22); --set-soft:rgba(255,255,255,.15); --set-on-ink:#3344F5;
@@ -245,13 +245,11 @@ select.sel{width:100%;appearance:none;-webkit-appearance:none;border:0;border-ra
 .pop{animation:pop .45s cubic-bezier(.2,.9,.3,1.2) both}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
-/* ============ KOPPEN IN CLIMATE CRISIS ============
+/* ============ KOPPEN IN BEVAN ============
    Staat bewust onderaan zodat het de gewichten hierboven overschrijft
-   (anders maakt de browser het font kunstmatig vetter en lopen letters dicht).
-   Dikte instellen via YEAR: 1979 = dikst (loopt dicht), 1995 = vet en leesbaar, vanaf ~2010 "smelt" het. */
-.page-h,.brand,.blob b,.t-title,.gd-name,.gd-rep,.ring .rn b,.stat .v,.cal-title b{
-  font-family:var(--font-h);font-weight:400;font-synthesis:none;letter-spacing:0;font-variation-settings:"YEAR" 1995}
-.blob b{font-variation-settings:"YEAR" 1979}
+   (Bevan heeft maar één gewicht; anders maakt de browser het kunstmatig vetter). */
+.page-h,.brand,.blob b,.t-title,.gd-name,.gd-rep,.ring .rn b,.stat .v,.cal-title b,.count-v{
+  font-family:var(--font-h);font-weight:400;font-synthesis:none;letter-spacing:-.01em}
 .page-h{font-size:clamp(30px,9vw,44px);line-height:1.05}
 .t-title{font-size:clamp(30px,9vw,46px);line-height:1.02}
 .t-block.done .t-title{font-size:clamp(28px,8vw,40px)}
@@ -261,6 +259,16 @@ select.sel{width:100%;appearance:none;-webkit-appearance:none;border:0;border-ra
 .stat .v{font-size:38px}
 .cal-title b{font-size:24px}
 .brand{font-size:16px}
+
+/* ============ SCHUIFREGELAAR (aantal oefeningen) ============ */
+.count-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.count-v{font-size:40px;line-height:1}
+.range{-webkit-appearance:none;appearance:none;width:100%;height:44px;background:transparent;margin:4px 0 0;cursor:pointer}
+.range::-webkit-slider-runnable-track{height:12px;border-radius:99px;background:var(--soft)}
+.range::-moz-range-track{height:12px;border-radius:99px;background:var(--soft)}
+.range::-webkit-slider-thumb{-webkit-appearance:none;width:34px;height:34px;border-radius:50%;background:#fff;border:0;margin-top:-11px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.range::-moz-range-thumb{width:34px;height:34px;border-radius:50%;background:#fff;border:0;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.range-ends{display:flex;justify-content:space-between;font-size:13px;font-weight:700;color:var(--muted)}
 
 /* ============ WATER-TRANSITIE tussen oefeningen ============
    Golven gaan altijd naar boven: de golf onderaan stijgt en wordt de nieuwe achtergrond,

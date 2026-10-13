@@ -79,7 +79,7 @@ function compText(slots){
 function renderToday(){
   const t=todayStr(), done=state.log[t], streak=computeStreak(), lv=curLevel(), L=state.lvl, need=needFor(L.level);
   const view=done||buildPlan(state.dayIdx);
-  const nextTitle=dayTitle(applyFocus(DAYS[(state.dayIdx+1)%DAYS.length].slots, state.settings.focus));
+  const nextTitle=dayTitle(daySlots((state.dayIdx+1)%DAYS.length));
   const lvlTxt = state.settings.lockLevel ? "vastgezet" : L.level>=MAX ? "onderhoudsmodus" : `${L.prog}/${need} naar niveau ${L.level+1}`;
   const fillPct = L.level>=MAX ? 100 : L.prog/need*100;
 
@@ -112,7 +112,7 @@ function renderToday(){
       ${state.rest[t]?`<div class="t-rest">Joker ingezet — toch zin? Een workout telt gewoon als sessie.</div>`:""}
       <button class="btn-w" data-act="guided">${started?"Verder doen":"Start workout"}</button>
       <button class="linkbtn" data-act="sheet">of vink snel af</button>
-      <div class="meta">${view.items.length} oefeningen · ~${Math.round(view.items.length*1.25)} min · morgen: ${nextTitle}</div>
+      <div class="meta">${view.items.filter(i=>!i.opt).length} oefeningen${view.items.some(i=>i.opt)?" + 1 optioneel":""} · ~${Math.round(view.items.length*1.25)} min · morgen: ${nextTitle}</div>
     </div></section>`;
   }
   document.getElementById("p-today").innerHTML=h;
@@ -214,6 +214,12 @@ function renderSet(){
         <button class="${!S.lockLevel?"on":""}" data-act="lock" data-v="0">Verder opbouwen</button>
         <button class="${S.lockLevel?"on":""}" data-act="lock" data-v="1">Niveau vastzetten</button></div></div>
       <div class="small">${lvlStatus}</div></section>`;
+
+  const cnt=exCount();
+  h+=`<section class="set"><div class="count-head"><h3 class="sec-h">Aantal oefeningen</h3><span class="count-v" id="countv">${cnt}</span></div>
+      <p class="sec-p">Opener en afsluitstretch inbegrepen. De optionele oefening komt er nog bij.</p>
+      <input type="range" class="range" id="count" min="${OEFENINGEN_MIN}" max="${OEFENINGEN_MAX}" step="1" value="${cnt}" aria-label="Aantal oefeningen">
+      <div class="range-ends"><span>${OEFENINGEN_MIN}</span><span id="countmin">~${Math.round(cnt*1.25)} min</span><span>${OEFENINGEN_MAX}</span></div></section>`;
 
   h+=`<section class="set"><h3 class="sec-h">Focus</h3><p class="sec-p">Per aangevinkte categorie wordt elke dag één andere oefening gewisseld voor die categorie. De sessie blijft even lang.</p>
       <div class="seg pinkon">${catKeys.map(c=>`<button class="${S.focus.includes(c)?"on":""}" data-act="focus" data-c="${c}">${CATS[c].short}</button>`).join("")}</div></section>`;
@@ -425,7 +431,15 @@ document.addEventListener("click",e=>{
   const el=e.target.closest("[data-act]"); if(!el || el.disabled) return;
   const fn=ACT[el.dataset.act]; if(fn){ e.preventDefault(); fn(el,e); }
 });
+// schuifregelaar: getal live bijwerken tijdens het slepen, opslaan bij loslaten
+document.addEventListener("input",e=>{
+  if(e.target.id!=="count") return;
+  const v=+e.target.value;
+  document.getElementById("countv").textContent=v;
+  document.getElementById("countmin").textContent="~"+Math.round(v*1.25)+" min";
+});
 document.addEventListener("change",e=>{
+  if(e.target.id==="count"){ state.settings.count=+e.target.value; planChanged(); save(); render(); return; }
   if(e.target.id==="optex"){ state.settings.opt.ex=e.target.value; planChanged(); save(); render(); }
 });
 // App blijft soms openstaan over 04:00 heen: bij terugkeren opnieuw de dag checken

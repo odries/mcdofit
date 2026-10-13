@@ -7,6 +7,7 @@
 const INACTIEF_DAGEN = 10;          // na zoveel dagen zonder sessie: teller naar volgend niveau terug op 0 (niveau zelf blijft)
 const LEVEL_STAPPEN = [5,5,10,10,10]; // sessies nodig voor niveau 1→2, 2→3, 3→4, 4→5, 5→6
 const MAX = 6;
+const OEFENINGEN_MIN = 7, OEFENINGEN_MAX = 12; // bereik van de schuifregelaar (incl. opener en afsluitstretch)
 const KEY = "mcdofit:v2";
 
 /* =====================================================================
@@ -105,12 +106,14 @@ const INFO={
    DAGEN = CATEGORIE-SLOTS
    Elke dag: opener (mobiliteit) + slots + optionele oefening + afsluitstretch.
    De titel wordt automatisch afgeleid uit de slots, dus die klopt altijd.
+   Aantal oefeningen (instelling, 7–12): opener + afsluiter + (aantal − 2) slots.
+   Wil je meer dan de vaste slots, dan worden de "extra" slots er in volgorde bijgenomen.
    ===================================================================== */
 const DAYS=[
-  {tag:"A",slots:["benen","benen","billen","core","bovenlijf"],opt:"billen"},
-  {tag:"B",slots:["bovenlijf","bovenlijf","core","core","billen"],opt:"benen"},
-  {tag:"C",slots:["billen","billen","core","benen","bovenlijf"],opt:"core"},
-  {tag:"D",slots:["benen","billen","core","bovenlijf"],opt:"bovenlijf"},
+  {tag:"A",slots:["benen","benen","billen","core","bovenlijf"], extra:["billen","core","benen","bovenlijf","benen"], opt:"billen"},
+  {tag:"B",slots:["bovenlijf","bovenlijf","core","core","billen"], extra:["bovenlijf","benen","core","billen","bovenlijf"], opt:"benen"},
+  {tag:"C",slots:["billen","billen","core","benen","bovenlijf"], extra:["billen","core","benen","bovenlijf","core"], opt:"core"},
+  {tag:"D",slots:["benen","billen","core","bovenlijf"], extra:["mobi","core","benen","billen","bovenlijf","mobi"], opt:"bovenlijf"},
 ];
 
 /* =====================================================================
