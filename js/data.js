@@ -31,6 +31,7 @@ const EX={
   wallsit:{cat:"benen",n:"Wall sit",lv:[{r:"20 sec",easy:"minder diep zakken"},"25 sec","30 sec","40 sec","45 sec","50 sec"]},
   calf:{cat:"benen",n:"Calf raises",lv:["12×","15×",{r:"15×",note:"traag, 2 tellen boven"},{n:"Single-leg calf raises",r:"12× p/been"},{n:"Single-leg calf raises",r:"14× p/been"},{n:"Single-leg calf raises",r:"16× p/been"}]},
   stepup:{cat:"benen",n:"Step-ups",lv:[{r:"6× p/been",easy:"lage trede, steun aan de leuning"},"8× p/been","10× p/been",{r:"10× p/been",note:"traag: 3 tellen zakken"},"12× p/been",{r:"12× p/been",note:"hogere trede"}]},
+  tibraise:{cat:"benen",n:"Tib raises",lv:[{r:"10×",easy:"voeten dichter bij de muur"},"12×","15×",{r:"15×",note:"2 tellen vasthouden boven"},{r:"15×",note:"voeten verder van de muur"},{n:"Single-leg tib raises",r:"10× p/been"}]},
   /* ---- Billen/heupen ---- */
   glute:{cat:"billen",n:"Glute bridge",lv:["10×","12×","14×",{n:"Single-leg glute bridge",r:"8× p/been"},{n:"Single-leg glute bridge",r:"10× p/been"},{n:"Single-leg glute bridge",r:"12× p/been"}]},
   kickback:{cat:"billen",n:"Glute kickbacks",lv:["10× p/been","12× p/been",{r:"12× p/been",note:"even vasthouden boven"},{r:"14× p/been",note:"even vasthouden boven"},"15× p/been",{r:"15× p/been",note:"2 tellen vasthouden"}]},
@@ -68,6 +69,8 @@ const INFO={
   "Squats":"Voeten op heupbreedte. Zak alsof je op een stoel gaat zitten: heupen naar achter, knieën volgen de tenen, rug recht. Duw via je hielen weer omhoog.",
   "Split squats":"Sta in een schrede: één voet voor, één achter. Zak recht naar beneden tot de achterste knie bijna de grond raakt, duw via de voorste hiel omhoog. Reps per been. Steun eventueel met een hand.",
   "Reverse lunges":"Stap met één been naar achter en zak tot de achterste knie bijna de grond raakt. Duw via het voorste been terug naar stand. Reps per been. Steun eventueel met een hand.",
+  "Tib raises":"Leun met je rug en billen tegen een muur, voeten op heupbreedte zo'n 30 cm ervoor, benen gestrekt. Trek je tenen zo hoog mogelijk op richting je scheenbenen (hielen blijven op de grond), even vasthouden, traag zakken. Traint de spieren vooraan je scheen. Voeten dichter bij de muur = makkelijker, verder weg = zwaarder.",
+  "Single-leg tib raises":"Tib raise op één been: rug tegen de muur, één voet voor je, het andere been licht opgetild. Trek de tenen van het steunbeen hoog op, traag zakken. Reps per been.",
   "Step-ups":"Zet één voet volledig op een stevige trede of een laag bankje. Duw via die hiel omhoog tot je rechtop staat, breng het andere been bij en stap gecontroleerd terug. Reps per been. Steun eventueel aan de leuning.",
   "Wall push-ups":"Sta op armlengte van een muur, handen op schouderhoogte. Buig je armen om je borst naar de muur te laten zakken, duw terug. De makkelijkste push-up.",
   "Incline push-ups":"Handen op een verhoging (aanrecht, tafel, trap). Hoe hoger de steun, hoe makkelijker. Zak met je borst naar de rand, duw terug, lichaam recht.",
