@@ -8,27 +8,39 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="MCDO FIT">
-<meta name="theme-color" content="#FBFAF7">
+<meta name="theme-color" content="#0A0A0B">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Bevan&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-<main>
-  <section class="page" id="p-today"></section>
-  <section class="page" id="p-cal"></section>
-  <section class="page" id="p-set"></section>
-</main>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="logo">mcdo<i></i>fit</div>
+      <div class="tagline">Bodyweight trainer</div>
+    </div>
+    <div class="hbtns">
+      <button class="iconbtn" data-act="themeflip" aria-label="Licht of donker"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg></button>
+      <button class="iconbtn fab" id="fab" data-act="tab" data-tab="set" aria-label="Instellingen"><svg viewBox="0 0 24 24"><path d="M4 7h9M19 7h1M4 17h3M13 17h7"/><circle cx="16" cy="7" r="2.6"/><circle cx="10" cy="17" r="2.6"/></svg></button>
+    </div>
+  </header>
 
-<nav class="tabbar">
-  <button class="tab" data-act="tab" data-tab="today" aria-label="Vandaag"><svg viewBox="0 0 24 24"><path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></svg><span>Vandaag</span></button>
-  <button class="tab" data-act="tab" data-tab="cal" aria-label="Kalender"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="3.5"/><path d="M3.5 10h17M8.5 3v4M15.5 3v4"/></svg><span>Kalender</span></button>
-  <button class="tab" data-act="tab" data-tab="set" aria-label="Instellingen"><svg viewBox="0 0 24 24"><path d="M4 7h9M19 7h1M4 17h3M13 17h7"/><circle cx="16" cy="7" r="2.6"/><circle cx="10" cy="17" r="2.6"/></svg><span>Instellingen</span></button>
-</nav>
+  <nav class="tabs">
+    <button data-act="tab" data-tab="today">Vandaag</button>
+    <button data-act="tab" data-tab="cal">Kalender</button>
+  </nav>
+
+  <main>
+    <section class="page" id="p-today"></section>
+    <section class="page" id="p-cal"></section>
+    <section class="page" id="p-set"></section>
+  </main>
+</div>
 
 <div class="ov" id="sheet" hidden></div>
 <div class="ov" id="guided" hidden></div>
