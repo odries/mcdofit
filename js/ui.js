@@ -1,120 +1,85 @@
-/* MCDO FIT — schermen: Vandaag, Kalender, Instellingen, snel afvinken, begeleide modus. */
+/* MCDO FIT — schermen: Vandaag, Kalender, Instellingen, snel afvinken, begeleide modus.
+   Stijl zoals mcdo-pt: tegels (.tile) met kleurthema's (.t-orange, .t-cream, ...). */
 
 /* =====================================================================
-   ICONEN & MASCOTTE
+   ICONEN
    ===================================================================== */
 const CHECK='<svg viewBox="0 0 24 24"><path d="M4.5 12.5l5 5 10-11"/></svg>';
 const CHEV='<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>';
-const WAVE_D="C70 22 95 4 150 4S230 28 285 28S360 22 400 22"; // golf die naadloos herhaalt (begint en eindigt op hoogte 22)
-const WAVE='<svg class="wave" viewBox="0 0 400 36" preserveAspectRatio="none" aria-hidden="true"><path d="M0 36V22'+WAVE_D+'V36Z"/></svg>';
-const FLOOD_WAVE='<svg class="fw" viewBox="0 0 800 36" preserveAspectRatio="none" aria-hidden="true"><path d="M0 36V22'+WAVE_D+'C470 22 495 4 550 4S630 28 685 28S760 22 800 22V36Z"/></svg>';
-
-/* Het frietje. mood: "happy" | "sleep" | "flex" */
-function fries(mood,size){
-  size=size||120; const ink="#16152B", y="#FFC93C", box="#F48DB8";
-  const eyes = mood==="sleep"
-    ? `<path d="M41 92q6 5 12 0M67 92q6 5 12 0" stroke="${ink}" stroke-width="3.5" fill="none" stroke-linecap="round"/>`
-    : `<circle cx="47" cy="91" r="5.5" fill="${ink}"/><circle cx="73" cy="91" r="5.5" fill="${ink}"/><circle cx="49" cy="89" r="1.8" fill="#fff"/><circle cx="75" cy="89" r="1.8" fill="#fff"/>`;
-  const mouth = mood==="sleep"
-    ? `<path d="M55 107q5 3 10 0" stroke="${ink}" stroke-width="3.5" fill="none" stroke-linecap="round"/>`
-    : `<path d="M49 103Q60 116 71 103" stroke="${ink}" stroke-width="3.5" fill="none" stroke-linecap="round"/>`;
-  const arms = mood==="flex"
-    ? `<g stroke="${ink}" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M28 100L12 96L10 80"/><path d="M92 100L108 96L110 80"/></g><circle cx="10" cy="75" r="6.5" fill="${y}" stroke="${ink}" stroke-width="3"/><circle cx="110" cy="75" r="6.5" fill="${y}" stroke="${ink}" stroke-width="3"/>`
-    : "";
-  return `<svg class="fries" viewBox="0 0 120 140" width="${size}" height="${Math.round(size*140/120)}" aria-hidden="true">
-    <g fill="${y}" stroke="${ink}" stroke-width="3" stroke-linejoin="round">
-      <rect x="30" y="22" width="13" height="56" rx="4" transform="rotate(-14 36 50)"/>
-      <rect x="45" y="10" width="13" height="66" rx="4" transform="rotate(-5 51 43)"/>
-      <rect x="61" y="7" width="13" height="70" rx="4" transform="rotate(4 67 42)"/>
-      <rect x="76" y="18" width="13" height="60" rx="4" transform="rotate(13 82 48)"/>
-    </g>${arms}
-    <path d="M17 58Q60 74 103 58L93 130Q60 137 27 130Z" fill="${box}" stroke="${ink}" stroke-width="3" stroke-linejoin="round"/>
-    <ellipse cx="37" cy="102" rx="5" ry="3" fill="#FFD3E4"/><ellipse cx="83" cy="102" rx="5" ry="3" fill="#FFD3E4"/>
-    ${eyes}${mouth}
-  </svg>`;
-}
 
 /* =====================================================================
-   RENDER
+   HULPJES
    ===================================================================== */
 let tab="today", infoOpen={}, calView=null, calSel=null, sheetOpen=false;
 let qRunning={};
 function clearQuickTimers(){ for(const k in qRunning) clearInterval(qRunning[k].iv); qRunning={}; }
 function syncScroll(){ document.body.classList.toggle("noscroll", sheetOpen || !!G); }
 function plural(n,one,more){ return n+" "+(n===1?one:more); }
+function catTag(it){ return `<span class="tag c-${it.cat}">${it.pool==="open"?"Opener":it.pool==="close"?"Stretch":CATS[it.cat].short}</span>`; }
 function gainedChips(r){
   if(!r || (!r.levelUp && !r.gained.length)) return "";
-  return `<div class="gained">${r.levelUp?`<span>⬆️ Niveau ${r.levelUp} bereikt</span>`:""}${r.gained.map(id=>{const a=ACH.find(x=>x.id===id);return `<span>${a.em} ${a.name}</span>`;}).join("")}</div>`;
+  return `<div class="gained">${r.levelUp?`<span>⬆ Niveau ${r.levelUp} bereikt</span>`:""}${r.gained.map(id=>{const a=ACH.find(x=>x.id===id);return `<span>${a.em} ${a.name}</span>`;}).join("")}</div>`;
+}
+function compChips(slots){
+  return `<div class="chips">${composition(slots).map(x=>`<span class="chip-static c-${x.cat}"><span class="dot"></span>${x.n>=2?x.n+"× ":""}${CATS[x.cat].short.toLowerCase()}</span>`).join("")}</div>`;
 }
 
 function render(){
   clearQuickTimers();
   document.querySelectorAll(".page").forEach(p=>p.classList.toggle("on", p.id==="p-"+tab));
-  document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("on", b.dataset.tab===tab));
-  document.body.classList.toggle("pg-cal", tab==="cal");
-  document.body.classList.toggle("pg-set", tab==="set");
+  document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on", b.dataset.tab===tab));
+  document.getElementById("fab").classList.toggle("on", tab==="set");
   if(tab==="today") renderToday();
   if(tab==="cal") renderCal();
   if(tab==="set") renderSet();
   renderSheet();
-  // statusbalk van de telefoon kleurt mee met de pagina
   document.querySelector('meta[name=theme-color]').content=getComputedStyle(document.body).backgroundColor;
 }
 
-function weekStrip(t){
-  const mon=mondayOf(t), lab=["ma","di","wo","do","vr","za","zo"], firstLog=Object.keys(state.log).sort()[0]||t; let h="";
-  for(let i=0;i<7;i++){
-    const d=addDays(mon,i);
-    let c=state.log[d]?"done":state.rest[d]?"rest":d>t?"future":d===t?"":d<firstLog?"future":"miss";
-    if(d===t) c+=" today";
-    h+=`<div class="${c}">${lab[i]}<b></b></div>`;
-  }
-  return `<div class="wk">${h}</div>`;
-}
-function compText(slots){
-  return composition(slots).map(x=>(x.n>=2?x.n+"× ":"")+CATS[x.cat].short.toLowerCase()).join(" · ");
-}
-
-/* ---------- Vandaag: alles op één scherm ---------- */
+/* ---------- Vandaag ---------- */
 function renderToday(){
-  const t=todayStr(), done=state.log[t], streak=computeStreak(), lv=curLevel(), L=state.lvl, need=needFor(L.level);
+  const t=todayStr(), done=state.log[t], streak=computeStreak(), L=state.lvl, need=needFor(L.level), rest=!!state.rest[t];
   const view=done||buildPlan(state.dayIdx);
   const nextTitle=dayTitle(daySlots((state.dayIdx+1)%DAYS.length));
-  const lvlTxt = state.settings.lockLevel ? "vastgezet" : L.level>=MAX ? "onderhoudsmodus" : `${L.prog}/${need} naar niveau ${L.level+1}`;
-  const fillPct = L.level>=MAX ? 100 : L.prog/need*100;
+  const greet = done ? "Gedaan voor vandaag. <b>Sterk werk.</b>"
+    : rest ? "Joker vandaag. <b>Rust telt ook.</b>"
+    : streak>0 ? "Hou de reeks vast. <b>Nog één sessie.</b>"
+    : "Nog niks gedaan vandaag. <b>Tijd om te bewegen.</b>";
+  const lvlK = state.settings.lockLevel ? "niveau · vast" : L.level>=MAX ? "niveau · max" : `niveau · ${L.prog}/${need}`;
+  const pct = L.level>=MAX ? 100 : L.prog/need*100;
 
-  let h=`<div class="t-top wrap pad-top">
-    <header class="top"><div class="brand">${fries("happy",26)}MCDO FIT</div><span class="date">${prettyDate(t)}</span></header>
-    <div class="hero">
-      <div class="blob${streak?"":" cold"}"><b>${streak}</b></div>
-      <div class="hero-l">${streak===1?"dag":"dagen"} op rij</div>
-      <div class="hero-s">${plural(total(),"sessie","sessies")} · record ${state.best}</div>
-      <div class="lvl"><div class="lvl-row"><b>Niveau ${lv}</b><span>${lvlTxt}</span></div><div class="track"><div class="fill" style="width:${fillPct}%"></div></div></div>
-      ${L.resetNote?`<div class="hero-note">Meer dan ${INACTIEF_DAGEN} dagen pauze: de teller begint opnieuw, je niveau blijft.</div>`:""}
-    </div>
-    ${weekStrip(t)}
-  </div>`;
+  let h=`<div class="stack">
+    <section class="tile t-orange">
+      <div class="tl"><span>Vandaag</span><span>${prettyDate(t)}</span></div>
+      <p class="greet">${greet}</p>
+      <div class="bignum">${streak}<span class="of">${streak===1?"dag":"dagen"}</span></div>
+      <div class="bignumcap">op rij · record ${state.best}${L.resetNote?` · teller herstart na ${INACTIEF_DAGEN}+ dagen pauze`:""}</div>
+      <div class="momo">
+        <div class="mm t-cream"><div class="mv">${L.level}</div><div class="mk">${lvlK}</div><div class="bar"><i style="width:${pct}%"></i></div></div>
+        <div class="mm t-black"><div class="mv">${total()}</div><div class="mk">${total()===1?"sessie":"sessies"} totaal</div></div>
+      </div>
+    </section>`;
 
   if(done){
-    h+=`<section class="t-block done">${WAVE}<div class="wrap">
-      <div class="donerow"><div class="mascot pop">${fries("flex",58)}</div><div><div class="eyebrow">Vanavond · dag ${done.tag}</div><div class="t-title" style="margin:4px 0 0">Gedaan!</div></div></div>
+    h+=`<section class="tile t-mint workout">
+      <div class="tl"><span>Dag ${done.tag} · ${done.title}</span><span>✓ voltooid</span></div>
+      <div class="done-row"><div class="tt">Gedaan.</div><span class="check pop">✓</span></div>
       ${gainedChips(celebrate)}
-      <button class="btn-w" data-act="guided">Nog eens doen</button>
-      <button class="linkbtn" data-act="sheet">Bekijk wat je deed</button>
-      <div class="meta">Morgen: ${nextTitle}</div>
-    </div></section>`;
+      <div class="btnrow"><button class="btn secondary" data-act="sheet">Wat je deed</button><button class="btn primary" data-act="guided">Nog eens</button></div>
+      <div class="hint">Morgen: ${nextTitle}</div>
+    </section>`;
   } else {
     const started=Object.keys(state.checks).length>0;
-    h+=`<section class="t-block">${WAVE}<div class="wrap">
-      <div class="eyebrow">Vanavond · dag ${view.tag}</div>
-      <div class="t-title">${view.title}</div>
-      <div class="comp">${compText(view.slots)}</div>
-      ${state.rest[t]?`<div class="t-rest">Joker ingezet — toch zin? Een workout telt gewoon als sessie.</div>`:""}
-      <button class="btn-w" data-act="guided">${started?"Verder doen":"Start workout"}</button>
-      <button class="linkbtn" data-act="sheet">of vink snel af</button>
-      <div class="meta">${view.items.filter(i=>!i.opt).length} oefeningen${view.items.some(i=>i.opt)?" + 1 optioneel":""} · ~${Math.round(view.items.length*1.25)} min · morgen: ${nextTitle}</div>
-    </div></section>`;
+    h+=`<section class="tile t-cream workout">
+      <div class="tl"><span>Vanavond · dag ${view.tag}</span><button class="chip" data-act="sheet">Snel afvinken</button></div>
+      <div class="tt">${view.title}</div>
+      ${compChips(view.slots)}
+      ${rest?`<div class="hint">Joker ingezet — toch zin? Een workout telt gewoon als sessie.</div>`:""}
+      <button class="btn primary big" data-act="guided">${started?"Verder doen":"Start workout"}</button>
+      <div class="hint">${view.items.filter(i=>!i.opt).length} oefeningen${view.items.some(i=>i.opt)?" + 1 optioneel":""} · ~${Math.round(view.items.length*1.25)} min · morgen: ${nextTitle}</div>
+    </section>`;
   }
+  h+=`</div>`;
   document.getElementById("p-today").innerHTML=h;
 }
 
@@ -125,22 +90,22 @@ function renderSheet(){
   const t=todayStr(), done=state.log[t], view=done||buildPlan(state.dayIdx);
   const left=view.items.filter((it,j)=>!it.opt && !state.checks[j]).length;
   let h=`<div class="ov-top"><button class="iconbtn" data-act="sheetclose" aria-label="Terug">${CHEV}</button>
-    <div class="ov-title">${done?"Wat je deed":"Snel afvinken"}</div><span class="ov-count">${done?"✓ klaar":left+" te gaan"}</span></div>
-    <div class="sheet-list">`;
+    <div class="ov-title">${done?"Wat je deed":"Snel afvinken"}</div><span class="ov-count">${done?"✓ KLAAR":left+" TE GAAN"}</span></div>
+    <div class="sheet-in"><section class="tile">`;
   view.items.forEach((it,j)=>{
     const on=done?true:!!state.checks[j], lock=!!done, info=INFO[it.n], iOpen=!!infoOpen[j];
     const tm=!lock?it.r.match(/(\d+)\s*sec/):null;
     h+=`<div class="ex${on&&!lock?" done":""}">
       <button class="cb${on?" on":""}${lock?" lock":""}" ${lock?"disabled":`data-act="check" data-j="${j}"`} aria-label="afvinken">${CHECK}</button>
-      <div class="ex-txt"><div class="ex-cat">${catLabel(it)}${it.opt?" · optioneel":""}</div>
+      <div class="ex-txt">${catTag(it)}${it.opt?` <span class="tag opt">optioneel</span>`:""}
         <div class="ex-top"><button class="ex-name" ${info?`data-act="info" data-j="${j}"`:""}>${it.n}<span class="rep">${it.r}</span></button>
         ${tm?`<button class="qt" data-act="qtimer" data-j="${j}" data-sec="${tm[1]}">▶ ${tm[1]}s</button>`:""}
         ${info?`<button class="ibtn${iOpen?" open":""}" data-act="info" data-j="${j}" aria-label="uitleg">i</button>`:""}</div>
-        ${it.note?`<div class="ex-note">${it.note}</div>`:""}${it.easy?`<div class="ex-easy">makkelijker: ${it.easy}</div>`:""}
+        ${it.note?`<div class="ex-note">${it.note}</div>`:""}${it.easy?`<div class="ex-easy"><b>makkelijker:</b> ${it.easy}</div>`:""}
         ${info&&iOpen?`<div class="ex-info">${info}</div>`:""}
       </div></div>`;
   });
-  h+=`</div>`;
+  h+=`</section></div>`;
   host.hidden=false; host.innerHTML=h; syncScroll();
 }
 
@@ -151,96 +116,92 @@ function renderCal(){
   if(!calSel) calSel=t;
   const {y,m}=calView, offset=(new Date(y,m,1).getDay()+6)%7, nDays=new Date(y,m+1,0).getDate();
   const firstLog=Object.keys(state.log).sort()[0]||t;
-  const inChain=d=>!!(state.log[d]||state.rest[d]);
-  let cells="", monthDone=0, monthRest=0;
-  for(let i=0;i<offset;i++) cells+=`<div></div>`;
+  let cells=["ma","di","wo","do","vr","za","zo"].map(x=>`<div class="mcl">${x}</div>`).join(""), monthDone=0, monthRest=0;
+  for(let i=0;i<offset;i++) cells+=`<div class="mcell empty"></div>`;
   for(let day=1;day<=nDays;day++){
-    const d=isoDate(new Date(y,m,day)), col=(offset+day-1)%7;
+    const d=isoDate(new Date(y,m,day));
     let c = state.log[d]?"done": state.rest[d]?"rest": d>t?"future": d===t?"todo": d<firstLog?"pre":"miss";
     if(state.log[d]) monthDone++;
     if(state.rest[d]) monthRest++;
-    if(inChain(d)){ if(col<6 && inChain(addDays(d,1))) c+=" lr"; if(col>0 && inChain(addDays(d,-1))) c+=" ll"; }
     if(d===calSel) c+=" sel";
-    cells+=`<button class="c ${c}" data-act="calday" data-d="${d}" aria-label="${longDate(d)}"><i>${day}</i></button>`;
+    cells+=`<button class="mcell ${c}" data-act="calday" data-d="${d}" aria-label="${longDate(d)}">${day}</button>`;
   }
-  let h=`<div class="wrap pad-top page-end">
-    <h1 class="page-h">Kalender</h1>
-    <div class="stats3"><div class="stat hot"><div class="v">${computeStreak()}</div><div class="k">reeks</div></div>
-      <div class="stat"><div class="v">${state.best}</div><div class="k">record</div></div>
-      <div class="stat"><div class="v">${total()}</div><div class="k">totaal</div></div></div>
-    <div class="cal">
-      <div class="cal-head"><button class="iconbtn" data-act="calnav" data-dir="-1" aria-label="vorige maand">${CHEV}</button>
-        <div class="cal-title"><b>${MONTHS[m]}</b><span>${y} · ${plural(monthDone,"sessie","sessies")}${monthRest?` · ${monthRest} joker`:""}</span></div>
-        <button class="iconbtn flip" data-act="calnav" data-dir="1" aria-label="volgende maand">${CHEV}</button></div>
-      <div class="cal-dow">${["ma","di","wo","do","vr","za","zo"].map(x=>`<div>${x}</div>`).join("")}</div>
-      <div class="cal-grid">${cells}</div>
-      <div class="legend"><span><span class="ld" style="background:var(--cal-done)"></span>gedaan</span><span><span class="ld" style="background:var(--blue)"></span>joker</span><span><span class="ld" style="border:2px dashed var(--line)"></span>gemist</span></div>
-    </div>`;
+
+  let h=`<div class="stack">
+    <div class="stat3">
+      <div class="tile stat t-yellow"><div class="k">Reeks</div><div class="v">${computeStreak()}</div></div>
+      <div class="tile stat t-blue"><div class="k">Record</div><div class="v">${state.best}</div></div>
+      <div class="tile stat t-peach"><div class="k">Totaal</div><div class="v">${total()}</div></div>
+    </div>
+    <section class="tile">
+      <div class="mt"><div><div class="bigtitle">${MONTHS[m]}</div><div class="sub">${y} · ${plural(monthDone,"sessie","sessies")}${monthRest?` · ${monthRest} joker`:""}</div></div>
+        <div class="navbtns"><button class="iconbtn" data-act="calnav" data-dir="-1" aria-label="vorige maand">${CHEV}</button><button class="iconbtn flip" data-act="calnav" data-dir="1" aria-label="volgende maand">${CHEV}</button></div></div>
+      <div class="month">${cells}</div>
+      <div class="legend"><span><span class="dot" style="background:var(--c-orange)"></span>gedaan</span><span><span class="dot" style="background:var(--c-blue)"></span>joker</span><span><span class="dot" style="box-shadow:inset 0 0 0 1.5px var(--mute)"></span>gemist</span></div>
+    </section>`;
 
   const d=calSel, entry=state.log[d];
-  let det=`<div class="eyebrow">${d===t?"Vandaag":d>t?"Nog niet":"Dag"}</div><h3>${longDate(d)}</h3>`;
+  let det=`<div class="tl"><span>${d===t?"Vandaag":d>t?"Nog niet":"Dag"}</span>${entry?`<span>niveau ${entry.lvl}</span>`:""}</div><div class="dtitle">${longDate(d)}</div>`;
   if(entry){
-    det+=`<div class="tagline">Dag ${entry.tag} · ${entry.title} · niveau ${entry.lvl}</div><ul>${entry.items.map(it=>`<li>${it.n}${it.opt?" <small style='color:var(--muted)'>(opt.)</small>":""}<span>${it.r}</span></li>`).join("")}</ul>`;
+    det+=`<div class="hint" style="margin:0 0 8px">Dag ${entry.tag} · ${entry.title}</div>${entry.items.map(it=>`<div class="row"><span class="rn">${it.cat?`<span class="dot c-${it.cat}"></span>`:""}${it.n}${it.opt?` <span class="tag opt">opt.</span>`:""}</span><span class="rd">${it.r}</span></div>`).join("")}`;
   } else if(state.rest[d]){
-    det+=`<div style="font-weight:600">Joker ingezet — je reeks bleef beschermd.</div><button class="btn-s soft" data-act="joker" data-d="${d}">Joker annuleren</button>`;
+    det+=`<div class="hint">Joker ingezet — je reeks bleef beschermd.</div><div class="btnrow"><button class="btn secondary" data-act="joker" data-d="${d}">Joker annuleren</button></div>`;
   } else if(d>t){
-    det+=`<div style="color:var(--muted);font-weight:600">Deze dag moet nog komen.</div>`;
+    det+=`<div class="hint">Deze dag moet nog komen.</div>`;
   } else {
-    det+=`<div style="color:var(--muted);font-weight:600">${d===t?"Nog geen sessie vandaag.":"Geen sessie."}</div>`;
-    det+= restCountInWeek(d)<1
-      ? `<button class="btn-s" data-act="joker" data-d="${d}">Joker inzetten</button><div class="small">Eén joker per week (ma–zo). Die beschermt je reeks.</div>`
-      : `<div class="small">De joker van deze week is al gebruikt.</div>`;
+    det+=`<div class="hint">${d===t?"Nog geen sessie vandaag.":"Geen sessie."}${restCountInWeek(d)<1?" Eén joker per week (ma–zo) beschermt je reeks.":" De joker van deze week is al gebruikt."}</div>`;
+    if(restCountInWeek(d)<1) det+=`<div class="btnrow"><button class="btn primary" data-act="joker" data-d="${d}">Joker inzetten</button></div>`;
   }
-  h+=`<div class="detail">${det}</div>`;
+  h+=`<section class="tile t-cream">${det}</section>`;
 
   const un=unlockedIds();
-  h+=`<div class="sec"><h2 class="sec-h" style="margin-bottom:18px">Achievements</h2><div class="badges">${ACH.map(a=>{const u=un.includes(a.id);return `<div class="badge ${u?"":"lk"}"><span class="em">${a.em}</span><div><b>${a.name}</b><small>${u?a.sub:"nog vergrendeld"}</small></div></div>`;}).join("")}</div></div>
-    </div>`;
+  h+=`<section class="tile"><div class="tl"><span>Achievements</span><span>${un.length}/${ACH.length}</span></div>${ACH.map(a=>{const u=un.includes(a.id);return `<div class="ach ${u?"":"lk"}"><span class="em">${a.em}</span><div><b>${a.name}</b><small>${u?a.sub:"nog vergrendeld"}</small></div></div>`;}).join("")}</section>
+  </div>`;
   document.getElementById("p-cal").innerHTML=h;
 }
 
 /* ---------- Instellingen ---------- */
 function renderSet(){
-  const S=state.settings, L=state.lvl, catKeys=Object.keys(CATS);
-  const lvBtns=[1,2,3,4,5,6].map(n=>`<button class="${L.level===n?"on":""}" data-act="lvl" data-v="${n}">${n}</button>`).join("");
+  const S=state.settings, L=state.lvl, catKeys=Object.keys(CATS), cnt=exCount();
   const lvlStatus = S.lockLevel ? `Vastgezet op niveau ${L.level}. Er wordt niet verder opgebouwd.`
     : L.level<MAX ? `${L.prog}/${needFor(L.level)} sessies naar niveau ${L.level+1}. Meer dan ${INACTIEF_DAGEN} dagen pauze zet die teller terug op 0.`
     : "Niveau 6 is het plafond.";
-  let h=`<div class="wrap pad-top page-end"><h1 class="page-h">Instel&shy;lingen</h1>`;
+  let h=`<div class="sechead"><h3>Instellingen</h3><span>alles wordt bewaard op dit toestel</span></div><div class="stack">`;
 
-  h+=`<section class="set"><h3 class="sec-h">Niveau</h3><p class="sec-p">Je huidige niveau. Tik een ander getal om daar te (her)starten — de teller naar het volgende niveau begint dan op 0.</p>
-      <div class="seg six">${lvBtns}</div>
-      <div class="sub"><div class="sub-l">Na elke sessie</div><div class="seg">
-        <button class="${!S.lockLevel?"on":""}" data-act="lock" data-v="0">Verder opbouwen</button>
-        <button class="${S.lockLevel?"on":""}" data-act="lock" data-v="1">Niveau vastzetten</button></div></div>
-      <div class="small">${lvlStatus}</div></section>`;
+  h+=`<section class="tile"><div class="card-h">Niveau</div><p class="card-d">Tik een ander getal om daar te (her)starten — de teller naar het volgende niveau begint dan op 0.</p>
+      <div class="seg six">${[1,2,3,4,5,6].map(n=>`<button class="${L.level===n?"on":""}" data-act="lvl" data-v="${n}">${n}</button>`).join("")}</div>
+      <div class="lab">Na elke sessie</div>
+      <div class="seg"><button class="${!S.lockLevel?"on":""}" data-act="lock" data-v="0">Verder opbouwen</button><button class="${S.lockLevel?"on":""}" data-act="lock" data-v="1">Niveau vastzetten</button></div>
+      <div class="hint">${lvlStatus}</div></section>`;
 
-  const cnt=exCount();
-  h+=`<section class="set"><div class="count-head"><h3 class="sec-h">Aantal oefeningen</h3><span class="count-v" id="countv">${cnt}</span></div>
-      <p class="sec-p">Opener en afsluitstretch inbegrepen. De optionele oefening komt er nog bij.</p>
+  h+=`<section class="tile t-blue"><div class="count-head"><div><div class="tl" style="margin-bottom:8px"><span>Aantal oefeningen</span></div><div class="hint" style="margin:0">Opener en afsluitstretch inbegrepen.<br>De optionele oefening komt er nog bij.</div></div><span class="count-v" id="countv">${cnt}</span></div>
       <input type="range" class="range" id="count" min="${OEFENINGEN_MIN}" max="${OEFENINGEN_MAX}" step="1" value="${cnt}" aria-label="Aantal oefeningen">
       <div class="range-ends"><span>${OEFENINGEN_MIN}</span><span id="countmin">~${Math.round(cnt*1.25)} min</span><span>${OEFENINGEN_MAX}</span></div></section>`;
 
-  h+=`<section class="set"><h3 class="sec-h">Focus</h3><p class="sec-p">Per aangevinkte categorie wordt elke dag één andere oefening gewisseld voor die categorie. De sessie blijft even lang.</p>
-      <div class="seg pinkon">${catKeys.map(c=>`<button class="${S.focus.includes(c)?"on":""}" data-act="focus" data-c="${c}">${CATS[c].short}</button>`).join("")}</div></section>`;
+  h+=`<section class="tile"><div class="card-h">Focus</div><p class="card-d">Per aangevinkte categorie wordt elke dag één andere oefening gewisseld voor die categorie. De sessie blijft even lang.</p>
+      <div class="seg cats">${catKeys.map(c=>`<button class="c-${c}${S.focus.includes(c)?" on":""}" data-act="focus" data-c="${c}">${CATS[c].short}</button>`).join("")}</div></section>`;
 
   const modes=[["off","Uit"],["auto","Auto"],["cat","Categorie"],["ex","Oefening"]];
-  h+=`<section class="set"><h3 class="sec-h">Optionele oefening</h3><p class="sec-p">Een extra oefening die je mag overslaan. Auto = de dag kiest zelf.</p>
+  h+=`<section class="tile"><div class="card-h">Optionele oefening</div><p class="card-d">Een extra oefening die je mag overslaan. Auto = de dag kiest zelf.</p>
       <div class="seg">${modes.map(([v,l])=>`<button class="${S.opt.mode===v?"on":""}" data-act="optmode" data-v="${v}">${l}</button>`).join("")}</div>`;
-  if(S.opt.mode==="cat") h+=`<div class="sub"><div class="sub-l">Altijd iets voor</div><div class="seg pinkon">${catKeys.map(c=>`<button class="${S.opt.cat===c?"on":""}" data-act="optcat" data-c="${c}">${CATS[c].short}</button>`).join("")}</div></div>`;
-  if(S.opt.mode==="ex") h+=`<div class="sub"><div class="sub-l">Altijd deze oefening</div><select class="sel" id="optex">${catKeys.map(c=>`<optgroup label="${CATS[c].label}">${poolList(c).map(k=>`<option value="${k}"${S.opt.ex===k?" selected":""}>${EX[k].n}</option>`).join("")}</optgroup>`).join("")}</select></div>`;
+  if(S.opt.mode==="cat") h+=`<div class="lab">Altijd iets voor</div><div class="seg cats">${catKeys.map(c=>`<button class="c-${c}${S.opt.cat===c?" on":""}" data-act="optcat" data-c="${c}">${CATS[c].short}</button>`).join("")}</div>`;
+  if(S.opt.mode==="ex") h+=`<div class="lab">Altijd deze oefening</div><select class="sel" id="optex">${catKeys.map(c=>`<optgroup label="${CATS[c].label}">${poolList(c).map(k=>`<option value="${k}"${S.opt.ex===k?" selected":""}>${EX[k].n}</option>`).join("")}</optgroup>`).join("")}</select>`;
   h+=`</section>`;
 
-  h+=`<section class="set"><h3 class="sec-h">Weergave</h3><p class="sec-p">Systeem volgt de instelling van je telefoon.</p>
+  h+=`<section class="tile"><div class="card-h">Weergave</div><p class="card-d">Systeem volgt de instelling van je telefoon.</p>
       <div class="seg">${[["system","Systeem"],["light","Licht"],["dark","Donker"]].map(([v,l])=>`<button class="${S.theme===v?"on":""}" data-act="theme" data-v="${v}">${l}</button>`).join("")}</div></section>`;
 
-  h+=`<section class="about">${fries("sleep",64)}<p class="sec-p" style="margin-top:10px">MCDO FIT · elke avond ~10 minuten<br>Normale spiervermoeidheid hoort erbij. Scherpe pijn = stoppen.</p><button class="danger" data-act="reset">Alles resetten</button></section></div>`;
+  h+=`</div><div class="foot">MCDO FIT · elke avond ~10 minuten<br>Normale spiervermoeidheid hoort erbij. Scherpe pijn = stoppen.<br><button class="danger" data-act="reset">Alles resetten</button></div>`;
   document.getElementById("p-set").innerHTML=h;
 }
 
 /* =====================================================================
    BEGELEIDE MODUS (fullscreen)
+   Elke oefening krijgt een kleur uit het palet; bij "Volgende" schuift de
+   volgende oefening als tegel in beeld.
    ===================================================================== */
+const PAL=["t-orange","t-blue","t-yellow","t-mint","t-forest","t-peach"];
+const END_THEME="t-cream";
 let G=null, gIv=null, actx=null, wakeLock=null;
 const RING_C=2*Math.PI*90;
 
@@ -249,40 +210,49 @@ function beep(f,d){ if(!actx) return; try{ const o=actx.createOscillator(), g=ac
 function buzz(ms){ try{ navigator.vibrate && navigator.vibrate(ms); }catch(e){} }
 async function wakeOn(){ try{ wakeLock=await navigator.wakeLock.request("screen"); }catch(e){} }
 function wakeOff(){ try{ wakeLock && wakeLock.release(); }catch(e){} wakeLock=null; }
+function themeFor(i){ return i>=G.items.length ? END_THEME : PAL[i%PAL.length]; }
+function fgOf(cls){ const d=document.createElement("div"); d.className=cls; d.style.color="var(--fg)"; document.body.appendChild(d); const c=getComputedStyle(d).color; d.remove(); return c; }
+function colorOf(cls){ const d=document.createElement("div"); d.className=cls; d.style.background="var(--tbg)"; document.body.appendChild(d); const c=getComputedStyle(d).backgroundColor; d.remove(); return c; }
 
-/* Water-transitie: de golf onderaan stijgt tot het hele scherm die kleur heeft,
-   de oefening wisselt, en onderaan schuift een nieuwe golf (in de andere kleur) binnen. */
-let flooding=false;
-function flood(swap){
-  if(flooding) return;
-  const host=document.getElementById("guided"), H=window.innerHeight;
-  const reduce=window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const block=host.querySelector(".gd-block");
-  if(reduce || !Element.prototype.animate || !block){ swap(); return; }
-  flooding=true; host.style.overflow="hidden";
-  const color=getComputedStyle(block).backgroundColor;
-  const f=document.createElement("div"); f.className="flood"; f.innerHTML=FLOOD_WAVE;
-  f.style.background=color; f.style.color=color;
-  document.body.appendChild(f);
-  const done=()=>{ host.style.overflow=""; flooding=false; };
-  const up=f.animate([{transform:`translateY(${block.getBoundingClientRect().top}px)`},{transform:"translateY(-40px)"}],{duration:430,easing:"cubic-bezier(.55,0,.8,.45)",fill:"forwards"});
-  up.onfinish=()=>{
-    swap();
-    const nb=host.querySelector(".gd-block"), main=host.querySelector(".gd-main");
-    if(!nb){ // naar het feestscherm: een roze golf spoelt over alles heen
-      f.style.zIndex=59;
-      const p=document.createElement("div"); p.className="flood"; p.innerHTML=FLOOD_WAVE;
-      p.style.background=p.style.color=getComputedStyle(host).backgroundColor;
-      document.body.appendChild(p);
-      const inn=p.animate([{transform:`translateY(${H+40}px)`},{transform:"translateY(-40px)"}],{duration:520,easing:"cubic-bezier(.25,.6,.35,1)",fill:"forwards"});
-      inn.onfinish=()=>{ f.remove(); p.remove(); done(); };
-      return;
-    }
-    f.remove(); // de nieuwe achtergrond heeft nu dezelfde kleur als het water
-    const dist=H-nb.getBoundingClientRect().top+40;
-    nb.animate([{transform:`translateY(${dist}px)`},{transform:"translateY(0)"}],{duration:600,easing:"cubic-bezier(.2,.65,.3,1)"}).onfinish=done;
-    if(main) main.animate([{opacity:0,transform:"translateY(18px)"},{opacity:1,transform:"translateY(0)"}],{duration:420,delay:120,easing:"ease-out",fill:"backwards"});
+/* Overgang: de volgende oefening schuift als gekleurde tegel (ronde hoeken) in beeld,
+   van rechts bij "Volgende", van links bij "Vorige". */
+let sliding=false;
+function slide(nextIdx, swap){
+  if(sliding) return;
+  const host=document.getElementById("guided"), dir=nextIdx<G.i?-1:1;
+  if(prefersReduced() || !Element.prototype.animate || nextIdx===G.i){ swap(); return; }
+  sliding=true; host.style.overflow="hidden";
+  const p=document.createElement("div"); p.className="slide"; p.style.background=colorOf(themeFor(nextIdx));
+  document.body.appendChild(p);
+  const ease="cubic-bezier(.3,0,.15,1)";
+  const main=host.querySelector(".gd-main");
+  if(main) main.animate([{transform:"translateX(0)",opacity:1},{transform:`translateX(${-dir*48}px)`,opacity:.2}],{duration:440,easing:ease,fill:"forwards"});
+  p.animate([{transform:`translateX(${dir*100}%)`,borderRadius:"28px"},{transform:"translateX(0)",borderRadius:"0px"}],{duration:440,easing:ease,fill:"forwards"}).onfinish=()=>{
+    swap(); p.remove(); host.style.overflow=""; sliding=false;
+    const m=host.querySelector(".gd-main");
+    if(m) m.animate([{opacity:0,transform:`translateX(${dir*28}px)`},{opacity:1,transform:"translateX(0)"}],{duration:320,easing:"ease-out"});
   };
+}
+function prefersReduced(){ return !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches); }
+
+/* Timer klaar: het scherm flitst 3× in de contrastkleur (zichtbaar vanuit je ooghoek, ook zonder geluid).
+   Is de oefening helemaal klaar, dan blijft het scherm daarna mint tot je verdergaat. */
+function timerAlert(kind){
+  const host=document.getElementById("guided"); if(!host || host.hidden) return;
+  if(kind==="done") host.className="ov "+screenTheme(G.i);
+  const f=document.createElement("div"); f.className="flashfx"; f.style.background=fgOf(screenTheme(G.i));
+  document.body.appendChild(f);
+  const n=kind==="done"?3:2, kf=[];
+  for(let k=0;k<n;k++) kf.push({opacity:0},{opacity:.92},{opacity:0});
+  // bij "beweging beperken": één rustige oplichting i.p.v. flitsen
+  const anim = prefersReduced() || !f.animate ? null : f.animate(kf,{duration:n*420,easing:"ease-in-out"});
+  if(anim) anim.onfinish=()=>f.remove();
+  else { f.style.transition="opacity .6s"; f.style.opacity=".6"; setTimeout(()=>{ f.style.opacity="0"; setTimeout(()=>f.remove(),600); },600); }
+}
+function screenTheme(i){
+  const base=themeFor(i);
+  if(i<G.items.length && G.timer && G.timer.fin) return base==="t-mint"?"t-cream":"t-mint";
+  return base;
 }
 
 function timerFor(it){
@@ -322,59 +292,61 @@ function gTick(){
   if(s<=3 && s>0 && T.last!==s){ T.last=s; beep(660,.08); }
   if(T.rem<=0){
     T.run=false; clearInterval(gIv); beep(990,.3); buzz(300);
-    if(T.side<T.sides){ T.side++; T.rem=T.sec; T.switched=true; } else T.fin=true;
+    if(T.side<T.sides){ T.side++; T.rem=T.sec; T.switched=true; paintTimer(); timerAlert("switch"); return; }
+    T.fin=true; paintTimer(); timerAlert("done"); return;
   }
   paintTimer();
 }
 function paintTimer(){
   const T=G&&G.timer, el=document.getElementById("gring"); if(!T||!el) return;
-  el.classList.toggle("fin",T.fin);
+  el.classList.toggle("hurry", T.run && T.rem>0 && T.rem<=3);
   el.querySelector(".prg").style.strokeDashoffset = T.fin?0:RING_C*(1-T.rem/T.sec);
   el.querySelector(".rn b").textContent = T.fin?"✓":Math.ceil(T.rem);
   const side = T.sides>1?`kant ${T.side}/2<br>`:"";
   el.querySelector(".rn span").innerHTML = T.fin?"klaar":T.run?side+"tik = pauze":T.switched?"wissel<br>tik = start":side+(T.rem<T.sec?"tik = verder":"tik = start");
 }
+/* "30 sec p/kant" → groot getal + kleine eenheid, zoals de grote cijfers in mcdo-pt */
+function repHTML(r){ const m=r.match(/^(\d+)\s*(.*)$/); return m?`${m[1]}<span class="u">${m[2]}</span>`:r; }
 
 function renderGuided(){
   const host=document.getElementById("guided");
   if(!G){ host.hidden=true; host.className="ov"; host.innerHTML=""; syncScroll(); return; }
   host.hidden=false; syncScroll();
   const n=G.items.length;
+  host.className="ov "+screenTheme(G.i);
 
   if(G.i>=n){
     const streak=computeStreak();
-    host.className="ov end";
     host.innerHTML=`<div class="ov-top"><button class="iconbtn" data-act="gclose" aria-label="Sluiten">${CHEV}</button></div>
       <div class="gd-main">
-        <div class="mascot big pop">${fries("flex",120)}</div>
-        <div class="gd-name">${G.replay?"Extra rondje!":"Gedaan!"}</div>
-        <p class="end-p">${G.replay?"Telt niet als extra sessie, wel als extra goed gevoel.":`${streak} ${streak===1?"dag":"dagen"} op rij · sessie #${total()}`}</p>
+        <div class="tl"><span>${G.replay?"Extra rondje":"Sessie voltooid"}</span></div>
+        <div class="end-big">${G.replay?"Extra<br>rondje.":"Gedaan."}</div>
+        ${G.replay?`<p class="end-p">Telt niet als extra sessie, wel als extra goed gevoel.</p>`:`<div class="momo end-momo">
+          <div class="mm t-orange"><div class="mv">${streak}</div><div class="mk">${streak===1?"dag":"dagen"} op rij</div></div>
+          <div class="mm t-black"><div class="mv">#${total()}</div><div class="mk">sessie</div></div></div>`}
         ${gainedChips(G.result)}
       </div>
-      <div class="end-foot"><button class="btn-w ink" data-act="gclose">Terug naar vandaag</button></div>`;
+      <div class="gd-foot"><button class="btn primary big" data-act="gclose">Terug naar vandaag</button></div>`;
     return;
   }
 
   const it=G.items[G.i], info=INFO[it.n], T=G.timer, last=G.i===n-1;
-  host.className="ov"+(G.i%2?" alt":""); // afwisselend wit-met-blauwe-golf en blauw-met-witte-golf
   host.innerHTML=`<div class="ov-top"><button class="iconbtn" data-act="gclose" aria-label="Sluiten">${CHEV}</button>
       <div class="gd-bar">${G.items.map((x,j)=>`<i class="${j<G.i?"done":j===G.i?"cur":""}"></i>`).join("")}</div>
       <span class="ov-count">${G.i+1}/${n}</span></div>
     <div class="gd-main">
-      <div class="gd-cat">${catLabel(it)}${it.opt?" · optioneel":""}</div>
+      <div class="gd-cat"><span>${catLabel(it)}</span>${it.opt?`<span class="tag opt">optioneel</span>`:""}</div>
       <div class="gd-name">${it.n}</div>
-      <div class="gd-rep">${it.r}</div>
+      <div class="gd-rep">${repHTML(it.r)}</div>
       ${it.note?`<div class="gd-note">${it.note}</div>`:""}${it.easy?`<div class="gd-easy"><b>makkelijker:</b> ${it.easy}</div>`:""}
-    </div>
-    <section class="gd-block">${WAVE}<div class="gd-in">
       ${T?`<button class="ring" id="gring" data-act="gtimer" aria-label="timer starten of pauzeren"><svg viewBox="0 0 200 200"><circle class="trk" cx="100" cy="100" r="90" fill="none" stroke-width="12"/><circle class="prg" cx="100" cy="100" r="90" fill="none" stroke-width="12" stroke-linecap="round" stroke-dasharray="${RING_C}" stroke-dashoffset="0"/></svg><div class="rn"><b></b><span></span></div></button>`:""}
       ${info?`<p class="gd-info">${info}</p>`:""}
-      <div class="gd-foot">
-        ${G.i>0?`<button class="round-w" data-act="gprev" aria-label="Vorige">${CHEV}</button>`:""}
-        ${it.opt?`<button class="ghost-w" data-act="gskip">Overslaan</button>`:""}
-        <button class="btn-w" data-act="gnext">${last?"Afronden":"Volgende"}</button>
-      </div>
-    </div></section>`;
+    </div>
+    <div class="gd-foot">
+      ${G.i>0?`<button class="round" data-act="gprev" aria-label="Vorige">${CHEV}</button>`:""}
+      ${it.opt?`<button class="btn secondary" style="flex:0 0 auto;width:auto" data-act="gskip">Overslaan</button>`:""}
+      <button class="btn primary big" data-act="gnext">${last?"Afronden":"Volgende"}</button>
+    </div>`;
   host.scrollTop=0;
   if(T) paintTimer();
 }
@@ -383,8 +355,10 @@ function renderGuided(){
    ACTIES (één centrale click-handler)
    ===================================================================== */
 function planChanged(){ if(!state.log[todayStr()]) state.checks={}; infoOpen={}; }
+function isDark(){ const th=state.settings.theme; return th==="dark" || (th==="system" && !(window.matchMedia && matchMedia("(prefers-color-scheme: light)").matches)); }
 const ACT={
   tab:el=>{ tab=el.dataset.tab; infoOpen={}; render(); window.scrollTo(0,0); },
+  themeflip:()=>{ state.settings.theme = isDark()?"light":"dark"; applyTheme(); save(); render(); },
   guided:()=>openGuided(),
   sheet:()=>{ sheetOpen=true; infoOpen={}; render(); document.getElementById("sheet").scrollTop=0; },
   sheetclose:()=>{ sheetOpen=false; render(); },
@@ -422,9 +396,9 @@ const ACT={
     infoOpen={}; celebrate=null; save(); render();
   },
   gclose:()=>closeGuided(),
-  gnext:()=>{ if(flooding) return; if(!G.replay) state.checks[G.i]=true; save(); flood(()=>gGo(G.i+1)); },
-  gskip:()=>{ if(flooding) return; if(!G.replay) delete state.checks[G.i]; save(); flood(()=>gGo(G.i+1)); },
-  gprev:()=>flood(()=>gGo(Math.max(0,G.i-1))),
+  gnext:()=>{ if(sliding) return; if(!G.replay) state.checks[G.i]=true; save(); slide(G.i+1,()=>gGo(G.i+1)); },
+  gskip:()=>{ if(sliding) return; if(!G.replay) delete state.checks[G.i]; save(); slide(G.i+1,()=>gGo(G.i+1)); },
+  gprev:()=>{ if(sliding) return; const p=Math.max(0,G.i-1); slide(p,()=>gGo(p)); },
   gtimer:()=>gToggleTimer(),
 };
 document.addEventListener("click",e=>{
@@ -448,7 +422,7 @@ document.addEventListener("visibilitychange",()=>{
   if(state.today!==todayStr()){ celebrate=null; freshen(); save(); if(!G) render(); }
   if(G) wakeOn();
 });
-try{ matchMedia("(prefers-color-scheme: dark)").addEventListener("change",applyTheme); }catch(e){}
+try{ matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{ applyTheme(); render(); }); }catch(e){}
 
 /* =====================================================================
    OPSTARTEN

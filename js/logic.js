@@ -181,7 +181,7 @@ function toggleRest(d){
 function applyTheme(){
   const th=state.settings.theme, root=document.documentElement;
   if(th==="system") delete root.dataset.theme; else root.dataset.theme=th;
-  const dark = th==="dark" || (th==="system" && window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches);
-  document.querySelector('meta[name=theme-color]').content = dark?"#100F1C":"#FBFAF7";
+  const dark = th==="dark" || (th==="system" && !(window.matchMedia && matchMedia("(prefers-color-scheme: light)").matches));
+  document.querySelector('meta[name=theme-color]').content = dark?"#0A0A0B":"#E7E2D6";
 }
 
