@@ -28,7 +28,7 @@ function render(){
   clearQuickTimers();
   document.querySelectorAll(".page").forEach(p=>p.classList.toggle("on", p.id==="p-"+tab));
   document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on", b.dataset.tab===tab));
-  document.getElementById("fab").classList.toggle("on", tab==="set");
+  const fab=document.getElementById("fab"); if(fab) fab.classList.toggle("on", tab==="set");
   if(tab==="today") renderToday();
   if(tab==="cal") renderCal();
   if(tab==="set") renderSet();
