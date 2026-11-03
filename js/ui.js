@@ -6,6 +6,7 @@
    ===================================================================== */
 const CHECK='<svg viewBox="0 0 24 24"><path d="M4.5 12.5l5 5 10-11"/></svg>';
 const CHEV='<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>';
+const CLOSE='<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>';
 
 /* =====================================================================
    HULPJES
@@ -202,6 +203,7 @@ function renderSet(){
    ===================================================================== */
 const PAL=["t-orange","t-blue","t-yellow","t-mint","t-forest","t-peach"];
 const END_THEME="t-cream";
+const STAPEL=3, PEEK=9; // aantal gedane oefeningen dat achter de tegel piept (0 = geen stapel) en hoeveel px elk
 let G=null, gIv=null, actx=null, wakeLock=null;
 const RING_C=2*Math.PI*90;
 
@@ -212,26 +214,28 @@ async function wakeOn(){ try{ wakeLock=await navigator.wakeLock.request("screen"
 function wakeOff(){ try{ wakeLock && wakeLock.release(); }catch(e){} wakeLock=null; }
 function themeFor(i){ return i>=G.items.length ? END_THEME : PAL[i%PAL.length]; }
 function fgOf(cls){ const d=document.createElement("div"); d.className=cls; d.style.color="var(--fg)"; document.body.appendChild(d); const c=getComputedStyle(d).color; d.remove(); return c; }
-function colorOf(cls){ const d=document.createElement("div"); d.className=cls; d.style.background="var(--tbg)"; document.body.appendChild(d); const c=getComputedStyle(d).backgroundColor; d.remove(); return c; }
 
-/* Overgang: de volgende oefening schuift als gekleurde tegel (ronde hoeken) in beeld,
-   van rechts bij "Volgende", van links bij "Vorige". */
+/* Overgang: de oefening is een afgeronde tegel. Bij "Volgende" schuift de nieuwe tegel van rechts
+   over de vorige, die achteruit de stapel in gaat. Bij "Vorige" schuift de bovenste weer weg. */
 let sliding=false;
 function slide(nextIdx, swap){
   if(sliding) return;
-  const host=document.getElementById("guided"), dir=nextIdx<G.i?-1:1;
-  if(prefersReduced() || !Element.prototype.animate || nextIdx===G.i){ swap(); return; }
+  const host=document.getElementById("guided"), old=host.querySelector(".gcard"), dir=nextIdx<G.i?-1:1;
+  if(prefersReduced() || !Element.prototype.animate || nextIdx===G.i || !old){ swap(); return; }
   sliding=true; host.style.overflow="hidden";
-  const p=document.createElement("div"); p.className="slide"; p.style.background=colorOf(themeFor(nextIdx));
-  document.body.appendChild(p);
-  const ease="cubic-bezier(.3,0,.15,1)";
-  const main=host.querySelector(".gd-main");
-  if(main) main.animate([{transform:"translateX(0)",opacity:1},{transform:`translateX(${-dir*48}px)`,opacity:.2}],{duration:440,easing:ease,fill:"forwards"});
-  p.animate([{transform:`translateX(${dir*100}%)`,borderRadius:"28px"},{transform:"translateX(0)",borderRadius:"0px"}],{duration:440,easing:ease,fill:"forwards"}).onfinish=()=>{
-    swap(); p.remove(); host.style.overflow=""; sliding=false;
-    const m=host.querySelector(".gd-main");
-    if(m) m.animate([{opacity:0,transform:`translateX(${dir*28}px)`},{opacity:1,transform:"translateX(0)"}],{duration:320,easing:"ease-out"});
-  };
+  const r=old.getBoundingClientRect(), ghost=old.cloneNode(true);
+  ghost.querySelectorAll("[id]").forEach(e=>e.removeAttribute("id"));
+  ghost.style.cssText=`position:fixed;left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px;transition:none;pointer-events:none`;
+  swap();
+  const card=host.querySelector(".gcard");
+  card.parentNode.insertBefore(ghost, dir>0?card:card.nextSibling);
+  const ease="cubic-bezier(.3,0,.15,1)", opts={duration:440,easing:ease,fill:"forwards"};
+  const back=`translateY(${-PEEK}px) scale(${(r.width-16)/r.width})`, top=[{transform:"translateX(0)"},{transform:"translateX(110%)"}];
+  ghost.style.transformOrigin=card.style.transformOrigin="50% 0";
+  const moved = dir>0
+    ? [ghost.animate([{transform:"none"},{transform:back}],opts), card.animate(top.slice().reverse(),opts)]
+    : [ghost.animate(top,opts), card.animate([{transform:back},{transform:"none"}],opts)];
+  moved[1].onfinish=()=>{ ghost.remove(); moved[1].cancel(); host.style.overflow=""; sliding=false; };
 }
 function prefersReduced(){ return !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches); }
 
@@ -239,7 +243,8 @@ function prefersReduced(){ return !!(window.matchMedia && matchMedia("(prefers-r
    Is de oefening helemaal klaar, dan blijft het scherm daarna mint tot je verdergaat. */
 function timerAlert(kind){
   const host=document.getElementById("guided"); if(!host || host.hidden) return;
-  if(kind==="done") host.className="ov "+screenTheme(G.i);
+  const card=host.querySelector(".gcard");
+  if(kind==="done" && card) card.className="gcard "+screenTheme(G.i);
   const f=document.createElement("div"); f.className="flashfx"; f.style.background=fgOf(screenTheme(G.i));
   document.body.appendChild(f);
   const n=kind==="done"?3:2, kf=[];
@@ -308,17 +313,23 @@ function paintTimer(){
 /* "30 sec p/kant" → groot getal + kleine eenheid, zoals de grote cijfers in mcdo-pt */
 function repHTML(r){ const m=r.match(/^(\d+)\s*(.*)$/); return m?`${m[1]}<span class="u">${m[2]}</span>`:r; }
 
+function stackHTML(){
+  let h="";
+  for(let j=Math.min(STAPEL,G.i);j>=1;j--) h+=`<div class="peek ${PAL[(G.i-j)%PAL.length]}" style="top:${(STAPEL-j)*PEEK}px;left:${12+j*8}px;right:${12+j*8}px"></div>`;
+  return h;
+}
 function renderGuided(){
   const host=document.getElementById("guided");
-  if(!G){ host.hidden=true; host.className="ov"; host.innerHTML=""; syncScroll(); return; }
+  if(!G){ host.hidden=true; host.innerHTML=""; syncScroll(); return; }
   host.hidden=false; syncScroll();
-  const n=G.items.length;
-  host.className="ov "+screenTheme(G.i);
-
-  if(G.i>=n){
+  const n=G.items.length, atEnd=G.i>=n;
+  const top=`<div class="ov-top"><button class="iconbtn" data-act="gclose" aria-label="Sluiten">${CLOSE}</button>
+      <div class="gd-bar">${G.items.map((x,j)=>`<i class="${j<G.i?"done":j===G.i?"cur":""}"></i>`).join("")}</div>
+      <span class="ov-count">${atEnd?n:G.i+1}/${n}</span></div>`;
+  let card;
+  if(atEnd){
     const streak=computeStreak();
-    host.innerHTML=`<div class="ov-top"><button class="iconbtn" data-act="gclose" aria-label="Sluiten">${CHEV}</button></div>
-      <div class="gd-main">
+    card=`<div class="gd-main">
         <div class="tl"><span>${G.replay?"Extra rondje":"Sessie voltooid"}</span></div>
         <div class="end-big">${G.replay?"Extra<br>rondje.":"Gedaan."}</div>
         ${G.replay?`<p class="end-p">Telt niet als extra sessie, wel als extra goed gevoel.</p>`:`<div class="momo end-momo">
@@ -327,14 +338,9 @@ function renderGuided(){
         ${gainedChips(G.result)}
       </div>
       <div class="gd-foot"><button class="btn primary big" data-act="gclose">Terug naar vandaag</button></div>`;
-    return;
-  }
-
-  const it=G.items[G.i], info=INFO[it.n], T=G.timer, last=G.i===n-1;
-  host.innerHTML=`<div class="ov-top"><button class="iconbtn" data-act="gclose" aria-label="Sluiten">${CHEV}</button>
-      <div class="gd-bar">${G.items.map((x,j)=>`<i class="${j<G.i?"done":j===G.i?"cur":""}"></i>`).join("")}</div>
-      <span class="ov-count">${G.i+1}/${n}</span></div>
-    <div class="gd-main">
+  } else {
+    const it=G.items[G.i], info=INFO[it.n], T=G.timer, last=G.i===n-1;
+    card=`<div class="gd-main">
       <div class="gd-cat"><span>${catLabel(it)}</span>${it.opt?`<span class="tag opt">optioneel</span>`:""}</div>
       <div class="gd-name">${it.n}</div>
       <div class="gd-rep">${repHTML(it.r)}</div>
@@ -347,8 +353,10 @@ function renderGuided(){
       ${it.opt?`<button class="btn secondary" style="flex:0 0 auto;width:auto" data-act="gskip">Overslaan</button>`:""}
       <button class="btn primary big" data-act="gnext">${last?"Afronden":"Volgende"}</button>
     </div>`;
+  }
+  host.innerHTML=top+`<div class="stage" style="padding-top:${STAPEL*PEEK}px">${stackHTML()}<section class="gcard ${screenTheme(G.i)}">${card}</section></div>`;
   host.scrollTop=0;
-  if(T) paintTimer();
+  if(!atEnd && G.timer) paintTimer();
 }
 
 /* =====================================================================
