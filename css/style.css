@@ -148,16 +148,21 @@ header.top{display:flex;align-items:center;gap:12px;margin:2px 4px 14px}
 .mt .sub{font-size:12px;font-weight:500;color:var(--mute);margin-top:6px}
 .navbtns{display:flex;gap:6px}
 .navbtns .iconbtn{background:var(--soft);width:42px;height:42px}
-.month{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.month{display:grid;grid-template-columns:repeat(7,1fr);gap:6px 0}
 .mcl{font-size:11px;font-weight:600;letter-spacing:.06em;color:var(--mute);text-transform:uppercase;text-align:center;padding-bottom:2px}
-.mcell{aspect-ratio:1;border-radius:14px;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:600;color:var(--mute);font-variant-numeric:tabular-nums}
-.mcell.empty{background:none}
-.mcell.done{background:var(--c-orange);color:#111}
-.mcell.rest{background:var(--c-blue);color:#fff}
-.mcell.miss{background:none;box-shadow:inset 0 0 0 1.5px var(--soft)}
-.mcell.future,.mcell.pre{opacity:.5}
-.mcell.todo{box-shadow:inset 0 0 0 2px var(--fg);color:var(--fg)}
-.mcell.sel{outline:2px solid var(--fg);outline-offset:2px}
+/* dagen zijn rondjes; opeenvolgende actieve dagen vormen samen één blob */
+.mcell{position:relative;aspect-ratio:1;display:grid;place-items:center}
+.mcell::before,.mcell::after{content:"";position:absolute;top:18%;bottom:18%;background:rgba(255,74,28,.34);display:none}
+.mcell.lr::after{display:block;left:50%;right:0}
+.mcell.ll::before{display:block;left:0;right:50%}
+.mcell i{position:relative;z-index:1;width:84%;aspect-ratio:1;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-style:normal;font-size:13px;font-weight:600;color:var(--mute);font-variant-numeric:tabular-nums}
+.mcell.empty::before,.mcell.empty::after{display:none}
+.mcell.done i{background:var(--c-orange);color:#111}
+.mcell.rest i{background:var(--c-blue);color:#fff}
+.mcell.miss i{background:none;box-shadow:inset 0 0 0 1.5px var(--soft)}
+.mcell.future i,.mcell.pre i{opacity:.5}
+.mcell.todo i{box-shadow:inset 0 0 0 2px var(--fg);color:var(--fg)}
+.mcell.sel i{outline:2px solid var(--fg);outline-offset:2px}
 .legend{display:flex;gap:14px;margin-top:16px;font-size:11.5px;font-weight:500;color:var(--mute);flex-wrap:wrap}
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--soft);font-size:13.5px}

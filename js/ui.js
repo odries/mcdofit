@@ -117,15 +117,18 @@ function renderCal(){
   if(!calSel) calSel=t;
   const {y,m}=calView, offset=(new Date(y,m,1).getDay()+6)%7, nDays=new Date(y,m+1,0).getDate();
   const firstLog=Object.keys(state.log).sort()[0]||t;
+  const inChain=d=>!!(state.log[d]||state.rest[d]);
   let cells=["ma","di","wo","do","vr","za","zo"].map(x=>`<div class="mcl">${x}</div>`).join(""), monthDone=0, monthRest=0;
   for(let i=0;i<offset;i++) cells+=`<div class="mcell empty"></div>`;
   for(let day=1;day<=nDays;day++){
-    const d=isoDate(new Date(y,m,day));
+    const d=isoDate(new Date(y,m,day)), col=(offset+day-1)%7;
     let c = state.log[d]?"done": state.rest[d]?"rest": d>t?"future": d===t?"todo": d<firstLog?"pre":"miss";
     if(state.log[d]) monthDone++;
     if(state.rest[d]) monthRest++;
+    // opeenvolgende actieve dagen worden met een band verbonden (binnen dezelfde weekrij)
+    if(inChain(d)){ if(col<6 && inChain(addDays(d,1))) c+=" lr"; if(col>0 && inChain(addDays(d,-1))) c+=" ll"; }
     if(d===calSel) c+=" sel";
-    cells+=`<button class="mcell ${c}" data-act="calday" data-d="${d}" aria-label="${longDate(d)}">${day}</button>`;
+    cells+=`<button class="mcell ${c}" data-act="calday" data-d="${d}" aria-label="${longDate(d)}"><i>${day}</i></button>`;
   }
 
   let h=`<div class="stack">
