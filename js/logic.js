@@ -93,6 +93,7 @@ async function save(){
   const s=JSON.stringify(state);
   if(window.storage){ try{ await window.storage.set(KEY,s); return; }catch(e){} }
   try{ localStorage.setItem(KEY,s); }catch(e){}
+  if(typeof scheduleSync==="function") scheduleSync(); // koppeling met MCDO PT (js/sync.js)
 }
 
 /* =====================================================================

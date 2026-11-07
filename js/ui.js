@@ -195,6 +195,17 @@ function renderSet(){
   h+=`<section class="tile"><div class="card-h">Weergave</div><p class="card-d">Systeem volgt de instelling van je telefoon.</p>
       <div class="seg">${[["system","Systeem"],["light","Licht"],["dark","Donker"]].map(([v,l])=>`<button class="${S.theme===v?"on":""}" data-act="theme" data-v="${v}">${l}</button>`).join("")}</div></section>`;
 
+  const sc=syncCfg();
+  const syncStatus = !sc.token ? "Nog niet gekoppeld."
+    : sc.lastErr ? `⚠ ${sc.lastErr}`
+    : sc.last ? `✓ Gekoppeld · laatste sync ${new Date(sc.last).toLocaleString("nl-BE",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}`
+    : "Token bewaard · nog niet gesynchroniseerd.";
+  h+=`<section class="tile"><div class="card-h">Koppeling met MCDO PT</div><p class="card-d">Je reeks, niveau en sessies verschijnen dan ook op je MCDO PT-dashboard. Gebruik een GitHub-token met <b>Gists: read and write</b>; het blijft enkel op dit toestel.</p>
+      <div class="hint" style="margin:0 0 12px">${syncStatus}</div>
+      ${sc.token?`<div class="btnrow" style="margin-top:0"><button class="btn primary" data-act="syncnow">Nu synchroniseren</button><button class="btn secondary" data-act="syncoff">Ontkoppel</button></div>`
+        :`<input class="fld" id="synctoken" type="password" autocomplete="off" placeholder="github_pat_…"><div class="btnrow"><button class="btn primary" data-act="syncsave">Koppel</button></div>`}
+    </section>`;
+
   h+=`</div><div class="foot">MCDO FIT · elke avond ~10 minuten<br>Normale spiervermoeidheid hoort erbij. Scherpe pijn = stoppen.<br><button class="danger" data-act="reset">Alles resetten</button></div>`;
   document.getElementById("p-set").innerHTML=h;
 }
@@ -411,6 +422,9 @@ const ACT={
   gskip:()=>{ if(sliding) return; if(!G.replay) delete state.checks[G.i]; save(); slide(G.i+1,()=>gGo(G.i+1)); },
   gprev:()=>{ if(sliding) return; const p=Math.max(0,G.i-1); slide(p,()=>gGo(p)); },
   gtimer:()=>gToggleTimer(),
+  syncsave:async()=>{ const v=(document.getElementById("synctoken")||{}).value||""; if(!v.trim()) return; setSyncCfg({token:v.trim()}); render(); await syncNow(); render(); },
+  syncnow:async()=>{ await syncNow(); render(); },
+  syncoff:()=>{ if(!confirm("Koppeling met MCDO PT verbreken? Je trainingsdata blijft gewoon staan.")) return; setSyncCfg({}); render(); },
 };
 document.addEventListener("click",e=>{
   const el=e.target.closest("[data-act]"); if(!el || el.disabled) return;
@@ -439,3 +453,5 @@ try{ matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{ 
    OPSTARTEN
    ===================================================================== */
 (async()=>{ await load(); freshen(); applyTheme(); await save(); render(); })();
+// bij terugkeren naar de app: sync bijwerken (bv. nieuwe dag) en het statusje verversen
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible" && syncCfg().token){ syncNow().then(()=>{ if(tab==="set") render(); }); } });
