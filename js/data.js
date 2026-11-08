@@ -14,53 +14,65 @@ const KEY = "mcdofit:v2";
    CATEGORIEËN & OEFENINGEN
    Elke oefening: cat (categorie), n (naam), lv (6 niveaus).
    Een niveau is "reps" of {r, n?, note?, easy?} — n overschrijft de naam (bv. Split squats).
-   Mobiliteit heeft sub: "open" (opwarmer) of "close" (afsluitstretch).
+   Bovenlijf heeft sub: "push" (duwen) of "pull" (trekken), zodat een dag altijd beide kan krijgen.
+   Mobiliteit heeft sub: "open" (opwarmer) of "close" (afsluitstretch); welke er komen, bepaalt de dag (zie DAYS).
    ===================================================================== */
 const CATS={
   benen:{label:"Benen",short:"Benen"},
   billen:{label:"Billen/heupen",short:"Billen"},
-  core:{label:"Core",short:"Core"},
+  core:{label:"Core & rug",short:"Core"},
   bovenlijf:{label:"Bovenlijf",short:"Bovenlijf"},
   mobi:{label:"Mobiliteit/stretch",short:"Mobiliteit"},
 };
 
 const EX={
-  /* ---- Benen ---- */
+  /* ---- Benen (knie-dominant + onderbeen) ---- */
   squat:{cat:"benen",n:"Squats",lv:[{r:"8×",easy:"tot op een stoel zakken"},"10×",{r:"10×",note:"traag: 3 tellen zakken"},{r:"12×",note:"traag: 3 tellen zakken"},{n:"Split squats",r:"8× p/been",easy:"steun met een hand"},{n:"Split squats",r:"10× p/been"}]},
   lunge:{cat:"benen",n:"Reverse lunges",lv:[{r:"6× p/been",easy:"steun met een hand"},"8× p/been","10× p/been",{r:"10× p/been",note:"traag"},"12× p/been",{r:"12× p/been",note:"traag"}]},
   wallsit:{cat:"benen",n:"Wall sit",lv:[{r:"20 sec",easy:"minder diep zakken"},"25 sec","30 sec","40 sec","45 sec","50 sec"]},
   calf:{cat:"benen",n:"Calf raises",lv:["12×","15×",{r:"15×",note:"traag, 2 tellen boven"},{n:"Single-leg calf raises",r:"12× p/been"},{n:"Single-leg calf raises",r:"14× p/been"},{n:"Single-leg calf raises",r:"16× p/been"}]},
   stepup:{cat:"benen",n:"Step-ups",lv:[{r:"6× p/been",easy:"lage trede, steun aan de leuning"},"8× p/been","10× p/been",{r:"10× p/been",note:"traag: 3 tellen zakken"},"12× p/been",{r:"12× p/been",note:"hogere trede"}]},
   tibraise:{cat:"benen",n:"Tib raises",lv:[{r:"10×",easy:"voeten dichter bij de muur"},"12×","15×",{r:"15×",note:"2 tellen vasthouden boven"},{r:"15×",note:"voeten verder van de muur"},{n:"Single-leg tib raises",r:"10× p/been"}]},
-  /* ---- Billen/heupen ---- */
+  /* ---- Billen/heupen (heup-dominant + heupstabiliteit) ---- */
   glute:{cat:"billen",n:"Glute bridge",lv:["10×","12×","14×",{n:"Single-leg glute bridge",r:"8× p/been"},{n:"Single-leg glute bridge",r:"10× p/been"},{n:"Single-leg glute bridge",r:"12× p/been"}]},
+  sldl:{cat:"billen",n:"Single-leg deadlift",lv:[{r:"6× p/been",easy:"tik met je vrije teen de grond aan"},"8× p/been","10× p/been",{r:"10× p/been",note:"traag: 3 tellen zakken"},"12× p/been",{r:"12× p/been",note:"traag, 2 tellen onderaan"}]},
   kickback:{cat:"billen",n:"Glute kickbacks",lv:["10× p/been","12× p/been",{r:"12× p/been",note:"even vasthouden boven"},{r:"14× p/been",note:"even vasthouden boven"},"15× p/been",{r:"15× p/been",note:"2 tellen vasthouden"}]},
   clamshell:{cat:"billen",n:"Clamshells",lv:["10× p/kant","12× p/kant","15× p/kant",{r:"15× p/kant",note:"even vasthouden open"},"18× p/kant",{r:"20× p/kant",note:"even vasthouden open"}]},
-  hydrant:{cat:"billen",n:"Fire hydrants",lv:["8× p/kant","10× p/kant","12× p/kant",{r:"12× p/kant",note:"even vasthouden boven"},"15× p/kant",{r:"15× p/kant",note:"2 tellen vasthouden"}]},
   legraise:{cat:"billen",n:"Zijwaarts beenheffen",lv:["10× p/kant","12× p/kant","14× p/kant","15× p/kant",{r:"15× p/kant",note:"traag"},{r:"18× p/kant",note:"traag"}]},
-  /* ---- Core ---- */
+  /* ---- Core & rug (anti-extensie, anti-rotatie, zijkant, rugstrekkers) ---- */
   plank:{cat:"core",n:"Plank",lv:[{r:"15 sec",easy:"op je knieën"},{r:"20 sec",easy:"op je knieën"},"30 sec","40 sec","45 sec","50 sec"]},
   sideplank:{cat:"core",n:"Side plank",lv:[{r:"10 sec p/kant",easy:"op je onderste knie"},{r:"15 sec p/kant",easy:"op je onderste knie"},"20 sec p/kant","25 sec p/kant","30 sec p/kant","35 sec p/kant"]},
   deadbug:{cat:"core",n:"Dead bug",lv:["6× p/kant","8× p/kant","10× p/kant",{r:"10× p/kant",note:"traag"},{r:"12× p/kant",note:"traag"},{r:"14× p/kant",note:"traag"}]},
   birddog:{cat:"core",n:"Bird dog",lv:["6× p/kant","8× p/kant","10× p/kant",{r:"10× p/kant",note:"even vasthouden"},{r:"12× p/kant",note:"2 tellen vasthouden"},{r:"14× p/kant",note:"2 tellen vasthouden"}]},
   superman:{cat:"core",n:"Superman",lv:["8×","10×",{r:"10×",note:"2 tellen vasthouden"},{r:"12×",note:"2 tellen vasthouden"},{r:"12×",note:"3 tellen vasthouden"},{r:"14×",note:"3 tellen vasthouden"}]},
-  /* ---- Bovenlijf ---- */
-  push:{cat:"bovenlijf",n:"Push-ups",lv:[{n:"Wall push-ups",r:"8×"},{n:"Incline push-ups",r:"8×",easy:"hogere steun = makkelijker"},{n:"Incline push-ups",r:"10×"},{n:"Knee push-ups",r:"8×"},{n:"Knee push-ups",r:"10×"},{r:"8×",easy:"op je knieën, 12×"}]},
-  dips:{cat:"bovenlijf",n:"Triceps-dips (stoel)",lv:[{r:"6×",easy:"knieën gebogen, voeten dichtbij"},"8×","10×",{r:"8×",note:"benen gestrekt"},{r:"10×",note:"benen gestrekt"},{r:"12×",note:"benen gestrekt"}]},
-  ytw:{cat:"bovenlijf",n:"Y-T-W-heffen",lv:["4× per letter","5× per letter","6× per letter",{r:"6× per letter",note:"even vasthouden"},"8× per letter",{r:"8× per letter",note:"2 tellen vasthouden"}]},
-  taps:{cat:"bovenlijf",n:"Shoulder taps",lv:[{r:"10× totaal",easy:"op je knieën"},{r:"12× totaal",easy:"op je knieën"},"12× totaal","16× totaal","20× totaal",{r:"20× totaal",note:"traag, heupen stil"}]},
+  revcrunch:{cat:"core",n:"Reverse crunch",lv:[{r:"8×",easy:"voeten op de grond laten tikken"},"10×","12×",{r:"12×",note:"traag zakken"},"15×",{r:"15×",note:"traag zakken"}]},
+  hollow:{cat:"core",n:"Hollow hold",lv:[{r:"15 sec",note:"knieën opgetrokken"},{r:"20 sec",note:"knieën opgetrokken"},{r:"20 sec",note:"benen half gestrekt"},{r:"25 sec",note:"benen half gestrekt"},{r:"25 sec",note:"benen gestrekt"},{r:"30 sec",note:"benen gestrekt"}]},
+  taps:{cat:"core",n:"Shoulder taps",lv:[{r:"10× totaal",easy:"op je knieën"},{r:"12× totaal",easy:"op je knieën"},"12× totaal","16× totaal","20× totaal",{r:"20× totaal",note:"traag, heupen stil"}]},
+  /* ---- Bovenlijf: duwen ---- */
+  push:{cat:"bovenlijf",sub:"push",n:"Push-ups",lv:[{n:"Wall push-ups",r:"8×"},{n:"Incline push-ups",r:"8×",easy:"hogere steun = makkelijker"},{n:"Incline push-ups",r:"10×"},{n:"Knee push-ups",r:"8×"},{n:"Knee push-ups",r:"10×"},{r:"8×",easy:"op je knieën, 12×"}]},
+  closepush:{cat:"bovenlijf",sub:"push",n:"Close-grip push-ups",lv:[{n:"Close-grip wall push-ups",r:"8×"},{n:"Close-grip incline push-ups",r:"8×"},{n:"Close-grip incline push-ups",r:"10×"},{n:"Close-grip knee push-ups",r:"8×"},{n:"Close-grip knee push-ups",r:"10×"},{r:"6×",easy:"op je knieën, 10×"}]},
+  pike:{cat:"bovenlijf",sub:"push",n:"Pike push-ups",lv:[{n:"Incline pike push-ups",r:"5×",easy:"handen op een stevige stoel of trede"},{n:"Incline pike push-ups",r:"6×"},{r:"5×"},"6×",{r:"8×"},{r:"8×",note:"traag: 3 tellen zakken"}]},
+  /* ---- Bovenlijf: trekken (houding, bovenrug, schouderbladen) ---- */
+  doorrow:{cat:"bovenlijf",sub:"pull",n:"Deurpost-roeien",lv:[{r:"8×",easy:"voeten verder van de deur = makkelijker"},"10×","12×",{r:"12×",note:"2 tellen vasthouden, schouderbladen samen"},{r:"10×",note:"voeten dichter bij de drempel"},{n:"Eenarmig deurpost-roeien",r:"8× p/arm"}]},
+  ytw:{cat:"bovenlijf",sub:"pull",n:"Y-T-W-heffen",lv:["4× per letter","5× per letter","6× per letter",{r:"6× per letter",note:"even vasthouden"},"8× per letter",{r:"8× per letter",note:"2 tellen vasthouden"}]},
+  snowangel:{cat:"bovenlijf",sub:"pull",n:"Reverse snow angels",lv:["6×","8×","10×",{r:"10×",note:"traag"},"12×",{r:"12×",note:"traag, armen hoger"}]},
   /* ---- Mobiliteit: openers ---- */
   catcow:{cat:"mobi",sub:"open",n:"Cat-cow",lv:["6×","8×","8×","8×","10×","10×"]},
   wgs:{cat:"mobi",sub:"open",n:"World's greatest stretch",lv:["4× p/kant","4× p/kant","5× p/kant","5× p/kant","6× p/kant","6× p/kant"]},
   shoulderroll:{cat:"mobi",sub:"open",n:"Arm circles & shoulder rolls",lv:["20 sec","20 sec","30 sec","30 sec","30 sec","30 sec"]},
+  openbook:{cat:"mobi",sub:"open",n:"Open book",lv:["5× p/kant","6× p/kant","6× p/kant","8× p/kant","8× p/kant","8× p/kant"]},
   hipopener:{cat:"mobi",sub:"open",n:"Hip openers (knie-cirkels)",lv:["6× p/kant","6× p/kant","8× p/kant","8× p/kant","8× p/kant","8× p/kant"]},
   legswings:{cat:"mobi",sub:"open",n:"Beenzwaaien",lv:["10× p/been","10× p/been","12× p/been","12× p/been","12× p/been","12× p/been"]},
   /* ---- Mobiliteit: afsluiters ---- */
   hipflexor:{cat:"mobi",sub:"close",n:"Hip flexor stretch",lv:["30 sec p/kant","30 sec p/kant","30 sec p/kant","30 sec p/kant","40 sec p/kant","40 sec p/kant"]},
   hamstring:{cat:"mobi",sub:"close",n:"Hamstring stretch",lv:["30 sec p/kant","30 sec p/kant","30 sec p/kant","30 sec p/kant","40 sec p/kant","40 sec p/kant"]},
   quad:{cat:"mobi",sub:"close",n:"Quad stretch",lv:["30 sec p/kant","30 sec p/kant","30 sec p/kant","30 sec p/kant","40 sec p/kant","40 sec p/kant"]},
+  calfstretch:{cat:"mobi",sub:"close",n:"Kuitstretch",lv:["30 sec p/kant","30 sec p/kant","30 sec p/kant","30 sec p/kant","40 sec p/kant","40 sec p/kant"]},
+  figure4:{cat:"mobi",sub:"close",n:"Figure-4 stretch",lv:["30 sec p/kant","30 sec p/kant","30 sec p/kant","30 sec p/kant","40 sec p/kant","40 sec p/kant"]},
   chest:{cat:"mobi",sub:"close",n:"Borststretch",lv:["30 sec","30 sec","30 sec","30 sec","40 sec","40 sec"]},
+  crossbody:{cat:"mobi",sub:"close",n:"Schouderstretch over de borst",lv:["30 sec p/kant","30 sec p/kant","30 sec p/kant","30 sec p/kant","40 sec p/kant","40 sec p/kant"]},
   childs:{cat:"mobi",sub:"close",n:"Child's pose",lv:["30 sec","30 sec","30 sec","30 sec","40 sec","40 sec"]},
+  cobra:{cat:"mobi",sub:"close",n:"Cobra",lv:["20 sec","20 sec","30 sec","30 sec","30 sec","30 sec"]},
   spinaltwist:{cat:"mobi",sub:"close",n:"Liggende rugdraai",lv:["30 sec p/kant","30 sec p/kant","30 sec p/kant","30 sec p/kant","40 sec p/kant","40 sec p/kant"]},
 };
 
@@ -76,47 +88,69 @@ const INFO={
   "Incline push-ups":"Handen op een verhoging (aanrecht, tafel, trap). Hoe hoger de steun, hoe makkelijker. Zak met je borst naar de rand, duw terug, lichaam recht.",
   "Knee push-ups":"Push-up steunend op je knieën i.p.v. je tenen. Handen iets breder dan schouders, lichaam recht van knie tot hoofd, zak en duw.",
   "Push-ups":"Volledige push-up op handen en tenen. Lichaam één rechte lijn, zak tot je borst bijna de grond raakt, duw terug. Span je buik aan.",
-  "Triceps-dips (stoel)":"Zit op de rand van een stevige stoel (tegen de muur), handen naast je heupen. Schuif je zit van de stoel en zak door je ellebogen naar achter te buigen tot ongeveer 90°, duw terug. Gebogen knieën = makkelijker, gestrekte benen = zwaarder.",
+  "Close-grip push-ups":"Push-up met je handen smal, onder je borst, ellebogen langs je lichaam naar achter (niet naar buiten). Legt de nadruk op je triceps. Lichaam recht, zak en duw.",
+  "Close-grip wall push-ups":"Smalle push-up tegen de muur: handen dicht bij elkaar op schouderhoogte, ellebogen langs je zij. Zak naar de muur en duw terug. Traint je triceps.",
+  "Close-grip incline push-ups":"Smalle push-up met je handen op een verhoging (aanrecht, tafel), dicht bij elkaar, ellebogen langs je zij naar achter. Hogere steun = makkelijker.",
+  "Close-grip knee push-ups":"Smalle push-up op je knieën: handen dicht bij elkaar onder je borst, ellebogen langs je lichaam. Lichaam recht van knie tot hoofd.",
+  "Pike push-ups":"Begin in een omgekeerde V: handen en voeten op de grond, heupen hoog. Buig je armen en breng je hoofd naar de grond tussen je handen, duw terug. Traint je schouders.",
+  "Incline pike push-ups":"Pike push-up met je handen op een stevige stoel of trede, heupen hoog, benen zo gestrekt als het gaat. Laat je hoofd naar de rand zakken en duw terug. Makkelijkere schouder-push.",
+  "Deurpost-roeien":"Sta in een deuropening en pak met beide handen de deurposten vast op borsthoogte. Zet je voeten dicht bij de drempel en leun achterover met gestrekte armen, lichaam recht. Trek je borst naar de deuropening door je schouderbladen samen te knijpen, traag terug. Hoe verder je achterover leunt, hoe zwaarder. Enkel in een stevig kozijn.",
+  "Eenarmig deurpost-roeien":"Zoals deurpost-roeien, maar met één hand aan de deurpost en je lichaam licht gedraaid. Trek jezelf naar de post zonder je romp te laten draaien. Reps per arm.",
   "Y-T-W-heffen":"Op je buik, voorhoofd op een handdoek. Til je armen een paar cm op en maak na elkaar een Y (schuin boven je hoofd), een T (zijwaarts) en een W (ellebogen bij je zij), schouderbladen samen. Traint bovenrug en schouders.",
+  "Reverse snow angels":"Op je buik, voorhoofd op een handdoek, armen langs je lichaam, handpalmen naar beneden. Til armen en borst een paar cm op en maak een grote boog met je armen tot boven je hoofd, alsof je een sneeuwengel maakt, en terug. Traint je bovenrug en houding.",
   "Shoulder taps":"In hoge plank, handen onder je schouders. Tik met één hand je andere schouder aan zonder met je heupen te wiebelen, dan de andere hand. Voeten breder = stabieler, op je knieën = makkelijker.",
   "Glute bridge":"Op je rug, knieën gebogen, voeten plat. Duw je heupen omhoog tot schouder–heup–knie één lijn vormen door je billen aan te spannen. Gecontroleerd zakken.",
   "Single-leg glute bridge":"Glute bridge met één been gestrekt omhoog. Duw via de hiel van het steunende been je heup omhoog, bekken recht houden. Reps per been.",
+  "Single-leg deadlift":"Sta op één been, knie licht gebogen. Kantel vanuit je heup naar voor terwijl je vrije been gestrekt naar achter gaat, rug recht, tot je romp bijna horizontaal is. Kom terug omhoog door je bil aan te spannen. Reps per been. Steun met een vinger aan de muur voor je evenwicht.",
   "Glute kickbacks":"Op handen en knieën. Duw één been naar achter-omhoog (voet naar het plafond), knie ~90°, tot je bil aanspant. Rustig terug. Reps per been.",
   "Clamshells":"Lig op je zij, knieën gebogen, hielen tegen elkaar. Open je bovenste knie als een schelp zonder je bekken naar achter te laten kantelen, traag terug. Reps per kant.",
-  "Fire hydrants":"Op handen en knieën. Til één gebogen knie zijwaarts op tot heuphoogte, romp stil, traag terug. Reps per kant.",
   "Zijwaarts beenheffen":"Lig op je zij, onderste been licht gebogen, bovenste gestrekt. Til het bovenste been schuin omhoog met de tenen naar voor (niet naar boven), traag zakken. Reps per kant.",
   "Calf raises":"Duw je hielen zo hoog mogelijk omhoog tot je op je tenen staat, even vasthouden, traag zakken. Steun licht met een hand voor je evenwicht.",
   "Single-leg calf raises":"Calf raise op één been, het andere licht van de grond. Duw je hiel hoog op, traag zakken. Steun met een hand aan de muur. Reps per been.",
   "Wall sit":"Rug plat tegen de muur, zak tot je knieën ongeveer 90° zijn (alsof je op een onzichtbare stoel zit). Hou de tijd vast. Minder diep zakken = makkelijker.",
   "Bird dog":"Op handen en knieën. Strek tegelijk je ene arm naar voor en het tegenovergestelde been naar achter, in lijn met je rug. Even vasthouden, dan de andere kant.",
   "Dead bug":"Op je rug, armen recht omhoog, knieën in 90°. Laat traag je ene arm én het tegenovergestelde been zakken tot net boven de grond, terug, dan de andere kant. Onderrug tegen de vloer.",
+  "Reverse crunch":"Op je rug, armen naast je, knieën in 90° boven je heupen. Rol je bekken op en breng je knieën richting je borst door je onderbuik aan te spannen (niet zwaaien), traag terug. Rugvriendelijker dan sit-ups.",
+  "Hollow hold":"Op je rug, onderrug stevig tegen de grond gedrukt. Til schouders en benen een paar cm op, armen naar voor of boven je hoofd, en hou vast. Komt je onderrug los van de grond, buig dan je knieën meer.",
   "Plank":"Steun op onderarmen en tenen, lichaam één rechte lijn van hoofd tot hielen. Span buik en billen aan, hol niet door. Op je knieën = makkelijker.",
   "Side plank":"Lig op je zij, steun op één onderarm, lichaam recht, heup omhoog. Hou de tijd vast, dan de andere kant. Op je onderste knie steunen = makkelijker.",
   "Superman":"Op je buik, armen naar voor gestrekt. Til tegelijk je armen, borst en benen een stukje van de grond, alsof je vliegt. Even vasthouden, rustig zakken. Traint de rugspieren.",
   "Hip flexor stretch":"Kniel op één knie, andere voet plat voor je. Knijp de bil van het achterste been aan en duw je heup zacht naar voor, romp rechtop. Rek vooraan de heup. Dan wisselen.",
   "Hamstring stretch":"Eén been gestrekt voor je, buig vanuit de heup naar voor met rechte rug tot je rek voelt achteraan het bovenbeen. Dan wisselen. Niet doorveren.",
+  "Kuitstretch":"Sta voor een muur, handen ertegen. Zet één been ver naar achter met de hiel plat op de grond en het been gestrekt, buig het voorste been tot je rek voelt in je kuit. Dan wisselen.",
+  "Figure-4 stretch":"Op je rug, knieën gebogen. Leg je rechterenkel op je linkerknie en trek je linkerdij rustig naar je toe tot je rek voelt in je rechterbil. Dan wisselen.",
   "Child's pose":"Kniel, zak met je zit naar je hielen en strek je armen naar voor op de grond. Laat rug en schouders ontspannen. Rustig ademen.",
+  "Cobra":"Op je buik, handen onder je schouders. Duw je borst rustig omhoog met gestrekte of licht gebogen armen, heupen blijven op de grond, schouders laag. Rekt buik en voorkant van de romp.",
   "World's greatest stretch":"Grote uitvalspas naar voor. Zet de hand aan de binnenkant van de voorste voet op de grond, draai dan de andere arm open naar het plafond. Terug, dan de andere kant. Volledige-lichaam-losmaker.",
   "Arm circles & shoulder rolls":"Sta rechtop. Maak rustige grote cirkels met je armen (voor- en achterwaarts) en rol je schouders los. Warmt schouders en bovenrug op.",
+  "Open book":"Lig op je zij, knieën gebogen voor je, armen gestrekt op elkaar. Draai je bovenste arm in een grote boog open naar de andere kant, kijk je hand na, en terug. Maakt je bovenrug los. Dan de andere kant.",
   "Hip openers (knie-cirkels)":"Op handen en knieën. Beweeg één knie in trage cirkels (open naar buiten, terug), dan de andere kant. Maakt de heupen los voor been-oefeningen.",
   "Beenzwaaien":"Steun met een hand aan de muur en zwaai één been rustig voor- en achterwaarts, dan zijwaarts. Dynamische opwarming voor heupen en benen. Dan het andere been.",
   "Quad stretch":"Sta rechtop, pak je enkel en trek je hiel naar je bil, knieën naast elkaar. Rek vooraan het dijbeen. Steun met een hand voor je evenwicht. Dan wisselen.",
   "Borststretch":"Vouw je handen achter je rug samen en til ze licht op terwijl je je borst opent en schouders naar achter brengt. Rekt borst en voorkant schouders.",
+  "Schouderstretch over de borst":"Breng één gestrekte arm voor je borst naar de andere kant en trek hem met je andere hand zacht dichter tegen je aan, schouder laag. Rekt achterkant schouder. Dan wisselen.",
   "Liggende rugdraai":"Lig op je rug, armen gespreid. Laat je gebogen knieën traag naar één kant zakken terwijl je schouders op de grond blijven. Rek in onderrug en romp. Dan de andere kant."
 };
 
 /* =====================================================================
-   DAGEN = CATEGORIE-SLOTS
-   Elke dag: opener (mobiliteit) + slots + optionele oefening + afsluitstretch.
-   De titel wordt automatisch afgeleid uit de slots, dus die klopt altijd.
-   Aantal oefeningen (instelling, 7–12): opener + afsluiter + (aantal − 2) slots.
-   Wil je meer dan de vaste slots, dan worden de "extra" slots er in volgorde bijgenomen.
+   DAGEN = CATEGORIE-SLOTS (herwerkt 8 nov 2026)
+   Principes: elke dag traint álle grote groepen minstens één keer (benen, heupen, duwen/trekken, core),
+   met nadruk op het thema van de dag. Over de 4 dagen: ongeveer een derde onderlichaam, een derde
+   bovenlijf, een derde core & rug. Duwen en trekken in evenwicht (goed voor je houding).
+   Opener en afsluitstretch horen bij het thema (open/close: lijst waaruit geroteerd wordt).
+   Slots: "benen", "billen", "core", "bovenlijf", "push", "pull", "mobi".
+   Aantal oefeningen (instelling, 7–12): opener + afsluiter + (aantal − 2) slots; daarboven
+   worden de "extra" slots in volgorde bijgenomen.
    ===================================================================== */
 const DAYS=[
-  {tag:"A",slots:["benen","benen","billen","core","bovenlijf"], extra:["billen","core","benen","bovenlijf","benen"], opt:"billen"},
-  {tag:"B",slots:["bovenlijf","bovenlijf","core","core","billen"], extra:["bovenlijf","benen","core","billen","bovenlijf"], opt:"benen"},
-  {tag:"C",slots:["billen","billen","core","benen","bovenlijf"], extra:["billen","core","benen","bovenlijf","core"], opt:"core"},
-  {tag:"D",slots:["benen","billen","core","bovenlijf"], extra:["mobi","core","benen","billen","bovenlijf","mobi"], opt:"bovenlijf"},
+  {tag:"A",name:"Benen & billen", slots:["benen","billen","benen","core","pull"], extra:["billen","push","core","benen","core"], opt:"core",
+   open:["legswings","hipopener","wgs"], close:["hamstring","quad","calfstretch","figure4","hipflexor"]},
+  {tag:"B",name:"Bovenlijf", slots:["push","pull","push","core","billen"], extra:["pull","benen","core","push","core"], opt:"benen",
+   open:["shoulderroll","openbook","catcow"], close:["chest","crossbody","childs"]},
+  {tag:"C",name:"Core & rug", slots:["core","pull","core","billen","benen"], extra:["core","push","benen","pull","billen"], opt:"push",
+   open:["catcow","openbook","hipopener"], close:["childs","cobra","spinaltwist"]},
+  {tag:"D",name:"Full body", slots:["benen","push","billen","pull","core"], extra:["core","benen","pull","push","billen"], opt:"core",
+   open:["wgs","catcow","legswings","shoulderroll"], close:["hipflexor","chest","hamstring","childs","figure4"]},
 ];
 
 /* =====================================================================

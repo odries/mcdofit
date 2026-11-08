@@ -5,9 +5,11 @@
    ===================================================================== */
 function poolList(pool){
   const keys=Object.keys(EX);
-  if(pool==="open"||pool==="close") return keys.filter(k=>EX[k].sub===pool);
+  if(pool==="open"||pool==="close"||pool==="push"||pool==="pull") return keys.filter(k=>EX[k].sub===pool);
   return keys.filter(k=>EX[k].cat===pool);
 }
+/* "push" en "pull" zijn bovenlijf-slots; voor titels, chips en focus tellen ze als bovenlijf */
+function slotCat(s){ return (s==="push"||s==="pull") ? "bovenlijf" : s; }
 function exAt(key,li){ const e=EX[key], raw=e.lv[li], l=typeof raw==="string"?{r:raw}:raw; return {n:l.n||e.n, r:l.r, note:l.note||"", easy:l.easy||""}; }
 
 /* Focus = wisselen: per focus-categorie wordt één niet-focus-slot vervangen
@@ -16,20 +18,25 @@ function applyFocus(slots,focus){
   const s=slots.slice();
   focus.forEach(f=>{
     let best=-1, bestCnt=0;
-    s.forEach((c,i)=>{ if(focus.includes(c)) return; const k=s.filter(x=>x===c).length; if(k>=bestCnt){ best=i; bestCnt=k; } });
+    s.forEach((c,i)=>{ if(focus.includes(slotCat(c))) return; const k=s.filter(x=>slotCat(x)===slotCat(c)).length; if(k>=bestCnt){ best=i; bestCnt=k; } });
     if(best>=0) s[best]=f;
   });
   return s;
 }
-function dayTitle(slots){
+/* Titel = het thema van de dag; staat er focus aan, dan staat dat er eerlijk bij */
+function dayTitle(slots,day){
+  if(day && day.name){
+    const f=(state.settings.focus||[]).filter(c=>!day.name.toLowerCase().includes(CATS[c].short.toLowerCase()));
+    return day.name+(f.length?" + "+f.map(c=>CATS[c].short.toLowerCase()).join(" & "):"");
+  }
   const cnt={}, order=[];
-  slots.forEach(c=>{ if(!cnt[c]){ cnt[c]=0; order.push(c); } cnt[c]++; });
+  slots.map(slotCat).forEach(c=>{ if(!cnt[c]){ cnt[c]=0; order.push(c); } cnt[c]++; });
   const dom=order.filter(c=>cnt[c]>=2).sort((a,b)=>cnt[b]-cnt[a]);
   return (dom.length && dom.length<3) ? dom.map(c=>CATS[c].short).join(" & ") : "Full body";
 }
 function composition(slots){
   const cnt={}, order=[];
-  slots.forEach(c=>{ if(!cnt[c]){ cnt[c]=0; order.push(c); } cnt[c]++; });
+  slots.map(slotCat).forEach(c=>{ if(!cnt[c]){ cnt[c]=0; order.push(c); } cnt[c]++; });
   return order.map(c=>({cat:c,n:cnt[c]}));
 }
 
@@ -46,10 +53,12 @@ function buildPlan(dayIdx){
   const day=DAYS[dayIdx], li=curLevel()-1, S=state.settings;
   const slots=daySlots(dayIdx);
   const rot=Object.assign({},state.rot), used=new Set(), items=[];
+  // opener en afsluiter komen uit de lijst van de dag (passend bij het thema), met een eigen teller per dag
   const take=(pool,opt)=>{
-    const list=poolList(pool), i=rot[pool]||0; let key=null;
-    for(let k=0;k<list.length;k++){ const c=list[(i+k)%list.length]; if(!used.has(c)){ key=c; rot[pool]=i+k+1; break; } }
-    if(!key){ key=list[i%list.length]; rot[pool]=i+1; }
+    const themed=(pool==="open"||pool==="close") && day[pool];
+    const list=themed?day[pool]:poolList(pool), rk=themed?pool+":"+day.tag:pool, i=rot[rk]||0; let key=null;
+    for(let k=0;k<list.length;k++){ const c=list[(i+k)%list.length]; if(!used.has(c)){ key=c; rot[rk]=i+k+1; break; } }
+    if(!key){ key=list[i%list.length]; rot[rk]=i+1; }
     used.add(key);
     items.push(Object.assign({key,pool,cat:EX[key].cat,opt:!!opt},exAt(key,li)));
   };
@@ -60,11 +69,13 @@ function buildPlan(dayIdx){
   else if(o.mode==="cat") take(o.cat,true);
   else if(o.mode==="ex" && EX[o.ex]) items.push(Object.assign({key:o.ex,pool:null,cat:EX[o.ex].cat,opt:true},exAt(o.ex,li)));
   take("close");
-  return {tag:day.tag, slots, title:dayTitle(slots), items, lvl:li+1, rotAfter:rot};
+  return {tag:day.tag, slots, title:dayTitle(slots,day), items, lvl:li+1, rotAfter:rot};
 }
 function catLabel(it){
   if(it.pool==="open") return "Opener";
   if(it.pool==="close") return "Afsluitstretch";
+  if(it.pool==="push") return "Bovenlijf · duwen";
+  if(it.pool==="pull") return "Bovenlijf · trekken";
   return CATS[it.cat].label;
 }
 
@@ -88,6 +99,9 @@ async function load(){
   // oude versie had een "handmatig niveau" naast het automatische: omzetten naar echt niveau + vastzetten
   if(state.settings.manualLevel){ state.lvl.level=state.settings.manualLevel; state.lvl.prog=0; state.settings.lockLevel=true; }
   delete state.settings.manualLevel;
+  // oefeningen die geschrapt zijn (bv. triceps-dips) niet meer als vaste optionele oefening gebruiken
+  if(state.settings.opt && !EX[state.settings.opt.ex]) state.settings.opt.ex="squat";
+  if(state.settings.opt && !CATS[state.settings.opt.cat]) state.settings.opt.cat="benen";
 }
 async function save(){
   const s=JSON.stringify(state);

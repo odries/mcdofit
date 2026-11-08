@@ -41,7 +41,7 @@ function render(){
 function renderToday(){
   const t=todayStr(), done=state.log[t], streak=computeStreak(), L=state.lvl, need=needFor(L.level), rest=!!state.rest[t];
   const view=done||buildPlan(state.dayIdx);
-  const nextTitle=dayTitle(daySlots((state.dayIdx+1)%DAYS.length));
+  const nextIdx=(state.dayIdx+1)%DAYS.length, nextTitle=dayTitle(daySlots(nextIdx),DAYS[nextIdx]);
   const greet = done ? "Gedaan voor vandaag. <b>Sterk werk.</b>"
     : rest ? "Joker vandaag. <b>Rust telt ook.</b>"
     : streak>0 ? "Hou de reeks vast. <b>Nog één sessie.</b>"
@@ -196,14 +196,21 @@ function renderSet(){
       <div class="seg">${[["system","Systeem"],["light","Licht"],["dark","Donker"]].map(([v,l])=>`<button class="${S.theme===v?"on":""}" data-act="theme" data-v="${v}">${l}</button>`).join("")}</div></section>`;
 
   const sc=syncCfg();
-  const syncStatus = !sc.token ? "Nog niet gekoppeld."
+  const pend=sc.pending;
+  const syncStatus = pend ? `Er staat al een back-up op GitHub met <b>${pend.total} sessies</b> (meer dan op dit toestel). Haal hem terug, of overschrijf hem met wat hier staat.`
+    : !sc.token ? "Nog niet gekoppeld."
     : sc.lastErr ? `⚠ ${sc.lastErr}`
     : sc.last ? `✓ Gekoppeld · laatste sync ${new Date(sc.last).toLocaleString("nl-BE",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}`
     : "Token bewaard · nog niet gesynchroniseerd.";
   h+=`<section class="tile"><div class="card-h">Koppeling met MCDO PT</div><p class="card-d">Je reeks, niveau en sessies verschijnen dan ook op je MCDO PT-dashboard. Gebruik een GitHub-token met <b>Gists: read and write</b>; het blijft enkel op dit toestel.</p>
       <div class="hint" style="margin:0 0 12px">${syncStatus}</div>
-      ${sc.token?`<div class="btnrow" style="margin-top:0"><button class="btn primary" data-act="syncnow">Nu synchroniseren</button><button class="btn secondary" data-act="syncoff">Ontkoppel</button></div>`
+      ${pend?`<div class="btnrow" style="margin-top:0"><button class="btn primary" data-act="syncrestore">Voortgang terughalen</button><button class="btn secondary" data-act="syncoverwrite">Overschrijven</button></div>`
+        :sc.token?`<div class="btnrow" style="margin-top:0"><button class="btn primary" data-act="syncnow">Nu synchroniseren</button><button class="btn secondary" data-act="syncoff">Ontkoppel</button></div>`
         :`<input class="fld" id="synctoken" type="password" autocomplete="off" placeholder="github_pat_…"><div class="btnrow"><button class="btn primary" data-act="syncsave">Koppel</button></div>`}
+    </section>`;
+
+  h+=`<section class="tile"><div class="card-h">Back-up</div><p class="card-d">Handig voor je de app opnieuw op je beginscherm zet of van telefoon wisselt. Ben je gekoppeld met MCDO PT, dan staat er na elke sessie al automatisch een back-up op GitHub.</p>
+      <div class="btnrow" style="margin-top:0"><button class="btn secondary" data-act="backupcopy">Kopieer back-up</button><button class="btn secondary" data-act="backuppaste">Herstel uit back-up</button></div>
     </section>`;
 
   h+=`</div><div class="foot">MCDO FIT · elke avond ~10 minuten<br>Normale spiervermoeidheid hoort erbij. Scherpe pijn = stoppen.<br><button class="danger" data-act="reset">Alles resetten</button></div>`;
@@ -422,8 +429,12 @@ const ACT={
   gskip:()=>{ if(sliding) return; if(!G.replay) delete state.checks[G.i]; save(); slide(G.i+1,()=>gGo(G.i+1)); },
   gprev:()=>{ if(sliding) return; const p=Math.max(0,G.i-1); slide(p,()=>gGo(p)); },
   gtimer:()=>gToggleTimer(),
-  syncsave:async()=>{ const v=(document.getElementById("synctoken")||{}).value||""; if(!v.trim()) return; setSyncCfg({token:v.trim()}); render(); await syncNow(); render(); },
+  syncsave:async()=>{ const v=(document.getElementById("synctoken")||{}).value||""; if(!v.trim()) return; setSyncCfg({token:v.trim()}); render(); const r=await syncNow(); render(); if(r.pending&&total()===0&&syncCfg().pending&&syncCfg().pending.full&&confirm("Er staat een back-up met "+syncCfg().pending.total+" sessies op GitHub. Nu terughalen?")){ try{ await restoreFromGist(); }catch(e){ alert(e.message); } render(); } },
   syncnow:async()=>{ await syncNow(); render(); },
+  syncrestore:async()=>{ try{ await restoreFromGist(); alert("Je voortgang is teruggezet ("+total()+" sessies)."); }catch(e){ alert(e.message); } render(); },
+  syncoverwrite:async()=>{ const p=syncCfg().pending; if(!confirm("De back-up op GitHub ("+(p?p.total:"?")+" sessies) vervangen door wat op dit toestel staat ("+total()+" sessies)? Dit kan je niet ongedaan maken.")) return; setSyncCfg(Object.assign(syncCfg(),{pending:null,allowOverwrite:true})); await syncNow(); render(); },
+  backupcopy:async()=>{ const txt=JSON.stringify(makeBackup()); try{ await navigator.clipboard.writeText(txt); alert("Back-up gekopieerd ("+total()+" sessies). Plak hem bv. in een notitie."); }catch(e){ prompt("Kopiëren lukte niet automatisch. Selecteer en kopieer deze tekst:",txt); } },
+  backuppaste:()=>{ const txt=prompt("Plak hier je back-up. Let op: dit vervangt wat nu op dit toestel staat."); if(!txt) return; try{ applyBackup(JSON.parse(txt)); alert("Back-up teruggezet ("+total()+" sessies)."); }catch(e){ alert("Dat lukte niet: "+(e.message||"ongeldige tekst")); } render(); },
   syncoff:()=>{ if(!confirm("Koppeling met MCDO PT verbreken? Je trainingsdata blijft gewoon staan.")) return; setSyncCfg({}); render(); },
 };
 document.addEventListener("click",e=>{
